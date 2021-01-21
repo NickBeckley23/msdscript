@@ -1,4 +1,4 @@
-INCS = cmdline.hpp
+INCS = cmdline.h catch.h
 
 OBJS = main.o cmdline.o
 
