@@ -1,6 +1,6 @@
-INCS = cmdline.h catch.h
+INCS = cmdline.h catch.h Expr.h
 
-OBJS = main.o cmdline.o
+OBJS = main.o cmdline.o Expr.o
 
 CXX = c++
 CXXFLAGS = --std=c++14 -O2
@@ -13,3 +13,6 @@ main.o: main.cpp $(INCS)
 
 cmdline.o: cmdline.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c cmdline.cpp
+
+Expr.o: Expr.cpp $(INCS)
+	$(CXX) $(CXXFLAGS) -c Expr.cpp

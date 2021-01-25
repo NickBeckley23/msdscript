@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <string>
+#include "catch.h"
 
 void use_arguments(int argc, char * argv[]);
 
