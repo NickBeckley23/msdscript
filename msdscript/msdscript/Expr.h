@@ -12,6 +12,7 @@
 #include <string>
 
 class Expr {
+public:
     virtual bool equals(Expr *other) = 0;
 };
     

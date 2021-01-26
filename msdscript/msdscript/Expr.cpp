@@ -30,7 +30,7 @@ bool Add::equals(Expr *other){
     if(o == NULL)
         return false;
     else
-        return (this->lhs == o->lhs && this->rhs == o->rhs);
+        return (this->lhs->equals(o->lhs) && this->rhs->equals(o->rhs));
 }
     
 Mult::Mult(Expr *lhs, Expr *rhs) {
@@ -43,7 +43,7 @@ bool Mult::equals(Expr *other){
     if(o == NULL)
         return false;
     else
-        return (this->lhs == o->lhs && this->rhs == o->rhs);
+        return (this->lhs->equals(o->lhs) && this->rhs->equals(o->rhs));
 }
 
 Variable::Variable(std::string var){
