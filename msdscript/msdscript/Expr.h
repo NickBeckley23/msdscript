@@ -13,7 +13,17 @@
 
 class Expr {
 public:
+    //checks if 2 expressions are equal
     virtual bool equals(Expr *other) = 0;
+    
+    //returns the value of the Expression
+    virtual int interp() = 0;
+    
+    //checks if there is a variable in the expression
+    virtual bool has_variable() = 0;
+    
+    //substitutes a given string for an expression
+    virtual Expr* subst(std::string string, Expr *exp) = 0;
 };
     
 class Num : public Expr{
@@ -22,7 +32,10 @@ class Num : public Expr{
         
     Num(int val);
     
-    virtual bool equals(Expr *other);
+    bool equals(Expr *other);
+    int interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
 };
     
 class Add : public Expr {
@@ -32,7 +45,11 @@ class Add : public Expr {
         
     Add(Expr *lhs, Expr *rhs);
     
-    virtual bool equals(Expr *other);
+    bool equals(Expr *other);
+    
+    int interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
     };
     
 class Mult : public Expr {
@@ -42,16 +59,22 @@ class Mult : public Expr {
         
     Mult(Expr *lhs, Expr *rhs);
     
-    virtual bool equals(Expr *other);
+    bool equals(Expr *other);
+    int interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
     };
 
-class Variable : public Expr {
+class Var : public Expr {
     public:
         std::string var;
     
-    Variable(std::string var);
+    Var(std::string var);
     
-    virtual bool equals(Expr *val);
+    bool equals(Expr *val);
+    int interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
 };
 
 #endif /* Expr_hpp */
