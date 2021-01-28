@@ -47,7 +47,7 @@ bool Add::equals(Expr *other){
 };
 
 int Add::interp(){
-        return (this->lhs->interp() + this->rhs->interp());
+    return this->lhs->interp() + this->rhs->interp();
 };
 
 bool Add::has_variable(){
@@ -55,9 +55,7 @@ bool Add::has_variable(){
 };
 
 Expr* Add::subst(std::string string, Expr *exp){
-    this->lhs = lhs->subst(string, exp);
-    this->rhs = rhs->subst(string, exp);
-    return this;
+    return new Add(lhs->subst(string, exp),rhs->subst(string, exp));
 };
     
 Mult::Mult(Expr *lhs, Expr *rhs) {
@@ -74,7 +72,7 @@ bool Mult::equals(Expr *other){
 };
 
 int Mult::interp(){
-    return (this->lhs->interp() + this->rhs->interp());
+    return this->lhs->interp() * this->rhs->interp();
 };
 
 bool Mult::has_variable(){
@@ -82,10 +80,9 @@ bool Mult::has_variable(){
 };
 
 Expr* Mult::subst(std::string string, Expr *exp){
-    this->lhs = lhs->subst(string, exp);
-    this->rhs = rhs->subst(string, exp);
-    return this;
+    return new Mult(lhs->subst(string, exp), rhs->subst(string, exp));
 }
+
 Var::Var(std::string var){
     this->var = var;
 };
