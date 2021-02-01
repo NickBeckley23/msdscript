@@ -54,7 +54,7 @@ void Num::print(std::ostream& output){
 }
 
 void Num::pretty_print(std::ostream& output){
-    pretty_print_at(output, print_group_none);
+    this->pretty_print_at(output, print_group_none);
 };
 
 void Num::pretty_print_at(std::ostream& output, print_mode_t mode){
@@ -106,11 +106,11 @@ void Add::pretty_print_at(std::ostream& output, print_mode_t mode){
         output << "(";
     }
     
-    this->lhs->pretty_print(output);
-    
+    lhs->pretty_print_at(output, print_group_add);
+
     output << " + ";
     
-    this->rhs->pretty_print(output);
+    rhs->pretty_print_at(output, print_group_none);
     
     if(mode == print_group_add || mode == print_group_add_or_mult){
         output << ")";
@@ -162,11 +162,11 @@ void Mult::pretty_print_at(std::ostream& output, print_mode_t mode){
     if(mode == print_group_add_or_mult){
     output << "(";
     }
-    this->lhs->pretty_print(output);
+    lhs->pretty_print_at(output, print_group_add_or_mult);
 
     output << " * ";
 
-    this->rhs->pretty_print(output);
+    rhs->pretty_print_at(output, print_group_none);
     
     if(mode == print_group_add_or_mult){
         output << ")";
@@ -308,5 +308,12 @@ TEST_CASE("equals"){
         CHECK ((new Mult(new Add( new Num(3), new Num(4)), new Mult( new Num(5), new Num(6))))->pp_to_string() == testString);
         testString = "(3 * 4) * (5 + 6)";
         CHECK ((new Mult(new Mult( new Num(3), new Num(4)), new Add( new Num(5), new Num(6))))->pp_to_string() == testString);
+    
+    testString = "((3 * 4) * 5 * 6) * (7 + 8)";
+    CHECK ((new Mult(new Mult( new Mult( new Num(3), new Num(4)), new Mult( new Num(5), new Num(6))), new Add( new Num(7), new Num(8))))
+           ->pp_to_string() == testString);
+    testString = "((a + b) * 7) * 6 * c";
+    CHECK ((new Mult(new Mult( new Add( new Var("a"), new Var("b")), new Num(7)), new Mult( new Num(6), new Var("c"))))
+           ->pp_to_string() == testString);
     
 };
