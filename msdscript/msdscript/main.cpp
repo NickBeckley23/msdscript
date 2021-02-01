@@ -12,7 +12,6 @@
 
 
 int main(int argc,char * argv[]) {
-    //Catch::Session().run(1, argv);
     use_arguments(argc,argv);
     return 0;
 }
