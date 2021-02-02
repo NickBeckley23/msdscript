@@ -31,10 +31,10 @@ Num::Num(int val) {
 
 bool Num::equals(Expr *other){
     Num *num = dynamic_cast<Num*>(other);
-    if(num == NULL)
-        return false;
-    else
+    if(num != NULL)
         return this->val == num->val;
+    else
+        return false;
 };
 
 int Num::interp(){
