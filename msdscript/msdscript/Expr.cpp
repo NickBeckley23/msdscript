@@ -214,11 +214,51 @@ void Var::pretty_print_at(std::ostream& output, print_mode_t mode){
 
 
 TEST_CASE("equals"){
-    
+    std::ostream& os = std::cout;
     Num *num1 = new Num(1);
     Num *num2 = new Num(2);
     Num *num3 = new Num(3);
     Num *num4 = new Num(4);
+
+    Num *num3copy = new Num(3);
+    Num *num2copy = new Num(2);
+    Num *num5 = new Num(5);
+    Num *num9 = new Num(9);
+    Var *numX = new Var("X");
+    Var *numY = new Var("Y");
+    Var *numXcopy = new Var("X");
+    Add *add3_3 = new Add(num3,num3);
+    Add *add3_2 = new Add(num3,num2);
+    Mult *mult3_2 = new Mult(num3,num2);
+    Add *add1_2_3 = new Add(new Num(1), new Add(new Num(2), new Num(3)));
+    Add *add1_2then3 = new Add(new Add(new Num(1), new Num(2)), new Num(3));
+    Add *mult1_2_3 = new Add(new Num(1), new Mult(new Num(2), new Num(3)));
+    Mult *mult1_2then3 = new Mult(new Add(new Num(1), new Num(2)), new Num(3));
+    Mult *mult1then2_3 = new Mult(new Num(1),new Add( new Num(2), new Num(3)));
+    Mult *mult3_3thenM3_2 = new Mult(add3_3,mult3_2);
+    Mult *mult3_2thenMadd3_2 = new Mult(mult3_2,add3_2);
+    num3->pretty_print(os);
+    num2->pretty_print(os);
+    numY->pretty_print(os);
+    numX->pretty_print(os);
+    add3_3->pretty_print(os);
+    mult3_2->print(os);
+    mult3_2->print(os);
+    printf("\n");
+    add1_2_3->pretty_print(os);
+    printf("\n");
+    add1_2then3->pretty_print(os);
+    printf("\n");
+    mult1_2_3->pretty_print(os);
+    printf("\n");
+    mult1_2then3->pretty_print(os);
+    printf("\n");
+    mult1then2_3->pretty_print(os);
+    printf("\n");
+    mult3_3thenM3_2->pretty_print(os);
+    printf("\n");
+    mult3_2thenMadd3_2->pretty_print(os);
+
     
     CHECK((new Add(new Num(5), new Num(4)))->equals(new Add(new Num(5), new Num(4))) == true);
     CHECK((new Add(num1, num2))->equals(new Add(num1, num2)) == true);
