@@ -5,3 +5,4 @@ msdscript/cmake-build-debug
 **.pbxuser
 **.xcodeproj/
 **/DerivedData/
+*.DS_Store
