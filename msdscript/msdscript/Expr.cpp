@@ -31,10 +31,10 @@ Num::Num(int val) {
 
 bool Num::equals(Expr *other){
     Num *num = dynamic_cast<Num*>(other);
-    if(num != NULL)
-        return this->val == num->val;
-    else
+    if(num == NULL)
         return false;
+    else
+        return this->val == num->val;
 };
 
 int Num::interp(){
@@ -219,14 +219,26 @@ TEST_CASE("equals"){
     Num *num2 = new Num(2);
     Num *num3 = new Num(3);
     Num *num4 = new Num(4);
+    Var *myVar = new Var("x");
+    Var *myVar2 = new Var("y");
+    Num *nullNum = NULL;
+    nullNum = NULL;
+    
+    CHECK(num1->equals(nullNum) == false);
+    CHECK((new Mult(num2, num1))->equals(new Add(num1, num2)) == false);
+    CHECK((new Add(num2, num1))->equals(new Mult(num1, num2)) == false);
+    CHECK((myVar)->equals(new Mult(num1, num2)) == false);
+    CHECK((num1)->interp() == 1);
+    CHECK((new Add(myVar, num1))->has_variable() == true);
+    CHECK((new Add(num1, myVar))->has_variable() == true);
+    CHECK((new Add(num2, num1))->interp() == 3);
+    CHECK((new Mult(num2, num1))->interp() == 2);
+    CHECK((new Mult(num1, myVar))->has_variable() == true);
+    CHECK((new Mult(num1, num2))->has_variable() == false);
+    myVar2->print(os);
 
-    Num *num3copy = new Num(3);
-    Num *num2copy = new Num(2);
-    Num *num5 = new Num(5);
-    Num *num9 = new Num(9);
     Var *numX = new Var("X");
     Var *numY = new Var("Y");
-    Var *numXcopy = new Var("X");
     Add *add3_3 = new Add(num3,num3);
     Add *add3_2 = new Add(num3,num2);
     Mult *mult3_2 = new Mult(num3,num2);
@@ -274,6 +286,12 @@ TEST_CASE("equals"){
            ->subst("x", new Var("y"))
            ->equals(new Add(new Var("y"), new Num(7))) );
     CHECK((new Num(8))->subst("x", new Num(8))->equals(new Num(8)));
+    CHECK( (new Mult(new Var("x"), new Num(7)))
+           ->subst("x", new Var("y"))
+           ->equals(new Mult(new Var("y"), new Num(7))) );
+    CHECK( (new Var("x"))
+           ->subst("y", new Var("y"))->equals(new Var("x")) == true);
+    
     
     
     std::string testString = "5";
