@@ -44,7 +44,7 @@ public:
     virtual void pretty_print(std::ostream& output) = 0;
     
     //takes in a enum print mode to determine the correct format for printing an expression
-    virtual void pretty_print_at(std::ostream& output, print_mode_t mode, long pos) = 0;
+    virtual void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos) = 0;
     
     //turns expression into a string for easy comparisons
     std::string to_string();
@@ -65,7 +65,7 @@ class Num : public Expr{
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
-    void pretty_print_at(std::ostream& output, print_mode_t mode, long pos);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
 };
     
 class Add : public Expr {
@@ -82,7 +82,7 @@ class Add : public Expr {
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
-    void pretty_print_at(std::ostream& output, print_mode_t mode, long pos);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
     };
     
 class Mult : public Expr {
@@ -98,7 +98,7 @@ class Mult : public Expr {
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
-    void pretty_print_at(std::ostream& output, print_mode_t mode, long pos);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
     };
 
 class Var : public Expr {
@@ -113,7 +113,7 @@ class Var : public Expr {
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
-    void pretty_print_at(std::ostream& output, print_mode_t mode, long pos);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
 };
 
 class Let : public Expr {
@@ -130,7 +130,7 @@ class Let : public Expr {
     Expr* subst(std::string string, Expr* exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
-    void pretty_print_at(std::ostream& output, print_mode_t mode, long pos);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
     
 };
 #endif /* Expr_hpp */

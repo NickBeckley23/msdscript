@@ -57,7 +57,7 @@ void Num::pretty_print(std::ostream& output){
     this->pretty_print_at(output, print_group_none, 0);
 };
 
-void Num::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
+void Num::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     output << this->val;
 }
 
@@ -96,12 +96,14 @@ void Add::print(std::ostream& output){
 };
 
 void Add::pretty_print(std::ostream& output){
-    lhs->pretty_print_at(output, print_group_add, 0);
+    long position = output.tellp();
+    long *positionPtr = &position;
+    lhs->pretty_print_at(output, print_group_add, positionPtr);
     output << " + ";
-    rhs->pretty_print_at(output, print_group_none, 0);
+    rhs->pretty_print_at(output, print_group_none, positionPtr);
 }
 
-void Add::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
+void Add::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     if(mode == print_group_add || mode == print_group_add_or_mult){
         output << "(";
     }
@@ -153,12 +155,14 @@ void Mult::print(std::ostream& output){
 };
 
 void Mult::pretty_print(std::ostream& output){
-    lhs->pretty_print_at(output, print_group_add_or_mult, 0);
+    long position = output.tellp();
+    long *positionPtr = &position;
+    lhs->pretty_print_at(output, print_group_add_or_mult, positionPtr);
     output << " * ";
-    rhs->pretty_print_at(output, print_group_add, 0);
+    rhs->pretty_print_at(output, print_group_add, positionPtr);
 }
 
-void Mult::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
+void Mult::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     if(mode == print_group_add_or_mult){
     output << "(";
     }
@@ -209,7 +213,7 @@ void Var::pretty_print(std::ostream& output){
     pretty_print_at(output, print_group_none, 0);
 };
 
-void Var::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
+void Var::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     output << this->var;
 }
 
@@ -262,12 +266,13 @@ void Let::pretty_print(std::ostream& output){
     output << "_let " << this->lhs << " = ";
     this->rhs->pretty_print_at(output, print_group_let, 0);
     output << "\n";
-    long pos = output.tellp();
+    long new_pos = output.tellp();
+    long *positionPtr = &new_pos;
     output << "_in  ";
-    this->body->pretty_print_at(output, print_group_let, pos);
+    this->body->pretty_print_at(output, print_group_let, positionPtr);
     
 }
-void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
+void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     if(mode == print_group_add || mode == print_group_add_or_mult){
         output << "(";
     }
@@ -277,12 +282,13 @@ void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
     this->rhs->pretty_print_at(output, print_group_let, pos);
     //this->rhs->pretty_print_at(output, mode, pos);
     output << "\n";
-    long newPos = output.tellp();
-    for(int i = 0; i < letPos-pos; i++){
+    long spaces = letPos - *pos;
+    *pos = output.tellp();
+    for(int i = 0; i < spaces; i++){
         output << " ";
     }
     output << "_in  ";
-    body->pretty_print_at(output, print_group_let, newPos);
+    body->pretty_print_at(output, print_group_let, pos);
     //body->pretty_print_at(output, mode, newPos);
     if(mode == print_group_add || mode == print_group_add_or_mult){
         output << ")";
@@ -410,7 +416,9 @@ TEST_CASE("equals"){
         CHECK ((new Let("x", new Num(5), new Add(new Let("y", new Num(3), new Add(new Var("y"), new Num(2))), new Var("x"))))->to_string() == "(_let x=5 _in ((_let y=3 _in (y+2))+x))");
 
     //new Let("x", new Num(5), new Let("y", new Add(new Var("y"), new Num(2)));
-    
+    //Test 11 [Add (let, let)]
+        testString = "(_let x = 1\n _in  x + 2) + _let y = 3\n               _in  y + 4";
+        CHECK((new Add( new Let( "x", new Num(1), new Add( new Var("x"), new Num(2))), new Let( "y", new Num(3), new Add( new Var("y"), new Num(4)))))->pp_to_string() == testString);
     
 
 //    Var *numX = new Var("X");
