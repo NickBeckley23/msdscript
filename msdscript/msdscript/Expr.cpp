@@ -54,10 +54,10 @@ void Num::print(std::ostream& output){
 }
 
 void Num::pretty_print(std::ostream& output){
-    this->pretty_print_at(output, print_group_none);
+    this->pretty_print_at(output, print_group_none, 0);
 };
 
-void Num::pretty_print_at(std::ostream& output, print_mode_t mode){
+void Num::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
     output << this->val;
 }
 
@@ -96,21 +96,21 @@ void Add::print(std::ostream& output){
 };
 
 void Add::pretty_print(std::ostream& output){
-    lhs->pretty_print_at(output, print_group_add);
+    lhs->pretty_print_at(output, print_group_add, 0);
     output << " + ";
-    rhs->pretty_print_at(output, print_group_none);
+    rhs->pretty_print_at(output, print_group_none, 0);
 }
 
-void Add::pretty_print_at(std::ostream& output, print_mode_t mode){
+void Add::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
     if(mode == print_group_add || mode == print_group_add_or_mult){
         output << "(";
     }
     
-    lhs->pretty_print_at(output, print_group_add);
+    lhs->pretty_print_at(output, print_group_add, pos);
 
     output << " + ";
     
-    rhs->pretty_print_at(output, print_group_none);
+    rhs->pretty_print_at(output, print_group_none, pos);
     
     if(mode == print_group_add || mode == print_group_add_or_mult){
         output << ")";
@@ -153,20 +153,21 @@ void Mult::print(std::ostream& output){
 };
 
 void Mult::pretty_print(std::ostream& output){
-    lhs->pretty_print_at(output, print_group_add_or_mult);
+    lhs->pretty_print_at(output, print_group_add_or_mult, 0);
     output << " * ";
-    rhs->pretty_print_at(output, print_group_add);
+    rhs->pretty_print_at(output, print_group_add, 0);
 }
 
-void Mult::pretty_print_at(std::ostream& output, print_mode_t mode){
+void Mult::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
     if(mode == print_group_add_or_mult){
     output << "(";
     }
-    lhs->pretty_print_at(output, print_group_add_or_mult);
+    lhs->pretty_print_at(output, print_group_add_or_mult, pos);
+    
 
     output << " * ";
 
-    rhs->pretty_print_at(output, print_group_none);
+    rhs->pretty_print_at(output, print_group_add, pos);
     
     if(mode == print_group_add_or_mult){
         output << ")";
@@ -205,12 +206,84 @@ void Var::print(std::ostream& output){
 };
 
 void Var::pretty_print(std::ostream& output){
-    pretty_print_at(output, print_group_none);
+    pretty_print_at(output, print_group_none, 0);
 };
 
-void Var::pretty_print_at(std::ostream& output, print_mode_t mode){
+void Var::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
     output << this->var;
 }
+
+Let::Let(std::string lhs, Expr *rhs, Expr *body){
+    this->lhs = lhs;
+    this->rhs = rhs;
+    this->body = body;
+}
+
+bool Let::equals(Expr *other){
+    Let *o = dynamic_cast<Let*>(other);
+    if(o == NULL)
+        return false;
+    else
+        return (this->lhs == o->lhs && this->rhs->equals(o->rhs) && this->body->equals(o->body));
+}
+
+int Let::interp(){
+    int n = this->rhs->interp();
+    Num *num = new Num(n);
+    Expr *new_body = this->body->subst(this->lhs, num);
+    return new_body->interp();
+}
+
+bool Let::has_variable(){
+    return (this->rhs->has_variable() || this->body->has_variable());
+}
+
+Expr* Let::subst(std::string string, Expr* exp){
+    Expr *newExpr = this->rhs->subst(string, exp);
+    return this->body->subst(this->lhs, newExpr);
+}
+
+void Let::print(std::ostream& output){
+    output << "(_let ";
+    output << lhs;
+    output << "=";
+    rhs->print(output);
+    output << " _in ";
+    body->print(output);
+    output << ")";
+}
+
+void Let::pretty_print(std::ostream& output){
+    output << "_let " << this->lhs << " = ";
+    this->rhs->pretty_print_at(output, print_group_let, 0);
+    output << "\n";
+    long pos = output.tellp();
+    output << "_in  ";
+    this->body->pretty_print_at(output, print_group_let, pos);
+    
+}
+void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long pos){
+    if(mode == print_group_add || mode == print_group_add_or_mult){
+        output << "(";
+    }
+    long letPos = output.tellp();
+    output << "_let ";
+    output << this->lhs << " = ";
+    this->rhs->pretty_print_at(output, print_group_let, pos);
+    //this->rhs->pretty_print_at(output, mode, pos);
+    output << "\n";
+    long newPos = output.tellp();
+    for(int i = 0; i < letPos-pos; i++){
+        output << " ";
+    }
+    output << "_in  ";
+    body->pretty_print_at(output, print_group_let, newPos);
+    //body->pretty_print_at(output, mode, newPos);
+    if(mode == print_group_add || mode == print_group_add_or_mult){
+        output << ")";
+    }
+}
+               
 
 
 TEST_CASE("equals"){
@@ -223,6 +296,49 @@ TEST_CASE("equals"){
     Var *myVar2 = new Var("y");
     Num *nullNum = NULL;
     nullNum = NULL;
+    Let *nullLet = NULL;
+    
+    Let *let1 = new Let("x", new Num(2), new Add(new Num(5), new Var("x")));
+    Let *let2 = new Let("x", new Num(2), new Add(new Num(5), new Var("x")));
+    //Let *let3 = new Let("x", new Num(2), new Add(new Num(5), new Num(2)));
+    std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
+        
+//    Let *ppLet = new Let("x", new Num(5), new Add(new Let("y", new Num(3), new Add(new Var("y"), new Num(2))), new Var("x")));
+    
+    CHECK((new Add(new Mult(new Num(5), new Let("x", new Num(5), new Var("x"))), new Num (1)))->interp() == 26);
+    CHECK((new Add(new Mult(new Num(5), new Let("x", new Num(5), new Var("x"))), new Num (1)))->pp_to_string() == "5 * (_let x = 5\n     _in  x) + 1");
+    
+    CHECK((new Mult(new Num(5), new Add(new Let("x", new Num(5), new Var("x")), new Num (1))))->interp() == 30);
+    CHECK((new Mult(new Num(5), new Add(new Let("x", new Num(5), new Var("x")), new Num (1))))->pp_to_string() == "5 * ((_let x = 5\n      _in  x) + 1)");
+    
+//    CHECK((new Mult(new Num(5), new Let("x", new Num(5), new Add(new Var("x"), new Num (1)))))->pp_to_string() == "5 * _let x = 5\n     _in  x + 1");
+    CHECK((new Mult(new Num(5), new Let("x", new Num(5), new Add(new Var("x"), new Num (1)))))->interp() == 30);
+    
+
+    CHECK ((new Mult( new Num (5), (new Let("x", new Num(5), new Let("y", new Num(3), new Let( "z", new Num(1), new Add (new Var("z"), new Num(4))))))))->pp_to_string() == "5 * (_let x = 5\n     _in  _let y = 3\n          _in  _let z = 1\n               _in  z + 4)");
+    //Let pretty print
+        CHECK ((new Let("x", new Num(5), new Let("x", new Num(1), new Add( new Var("x"), new Num(3)))))->pp_to_string() == "_let x = 5\n_in  _let x = 1\n     _in  x + 3");
+    
+        pp_let1 = "_let x = 5\n_in  x + 1";
+        CHECK ((new Let("x", new Num(5), new Add(new Var("x"), new Num(1))))
+               ->pp_to_string() == pp_let1);
+        pp_let1 = "_let x = 5\n_in  _let x = 2\n     _in  x + 3";
+        CHECK ((new Let("x", new Num(5), new Let("x", new Num(2), new Add( new Var("x"), new Num(3)))))
+               ->pp_to_string() == pp_let1);
+        pp_let1 = "_let x = 5\n_in  (_let y = 3\n      _in  y + 2) + x";
+        CHECK ((new Let("x", new Num(5), new Add(new Let("y", new Num(3), new Add(new Var("y"), new Num(2))), new Var("x"))))
+               ->pp_to_string() == pp_let1);
+    
+    //CHECK(ppLet->pp_to_string() == pp_let1);
+    CHECK(let1->equals(let2) == true);
+    CHECK(let1->equals(nullLet) == false);
+    CHECK(let1->has_variable() == true);
+    CHECK(let2->interp() == 7);
+    CHECK(let2->subst("x", num3)->interp() == 7);
+    
+    CHECK_THROWS_WITH((new Let("x", new Var("t"), new Add(new Var("x"), new Num(1))))->interp(), "variable has no value");
+    CHECK((new Let("x", new Num(5), new Add(new Var("x"), new Num(1))))->interp() == 6);
+        CHECK((new Let("x", new Add( new Num(5), new Num (2)), new Add(new Var("x"), new Num(1))))->interp() == 8);
     
     CHECK(num1->equals(nullNum) == false);
     CHECK((new Mult(num2, num1))->equals(new Add(num1, num2)) == false);
@@ -235,41 +351,52 @@ TEST_CASE("equals"){
     CHECK((new Mult(num2, num1))->interp() == 2);
     CHECK((new Mult(num1, myVar))->has_variable() == true);
     CHECK((new Mult(num1, num2))->has_variable() == false);
+    //myVar2->print(os);
     myVar2->print(os);
+    std::cout << "=y\n";
+    
+    std::string testString = "(_let x=5 _in ((_let y=3 _in (y+2))+x))";
+    
+    CHECK ((new Let("x", new Num(5), new Add(new Var("x"), new Num(1))))->to_string() == "(_let x=5 _in (x+1))");
+        CHECK ((new Let("x", new Num(5), new Add(new Let("y", new Num(3), new Add(new Var("y"), new Num(2))), new Var("x"))))->to_string() == "(_let x=5 _in ((_let y=3 _in (y+2))+x))");
 
-    Var *numX = new Var("X");
-    Var *numY = new Var("Y");
-    Add *add3_3 = new Add(num3,num3);
-    Add *add3_2 = new Add(num3,num2);
-    Mult *mult3_2 = new Mult(num3,num2);
-    Add *add1_2_3 = new Add(new Num(1), new Add(new Num(2), new Num(3)));
-    Add *add1_2then3 = new Add(new Add(new Num(1), new Num(2)), new Num(3));
-    Add *mult1_2_3 = new Add(new Num(1), new Mult(new Num(2), new Num(3)));
-    Mult *mult1_2then3 = new Mult(new Add(new Num(1), new Num(2)), new Num(3));
-    Mult *mult1then2_3 = new Mult(new Num(1),new Add( new Num(2), new Num(3)));
-    Mult *mult3_3thenM3_2 = new Mult(add3_3,mult3_2);
-    Mult *mult3_2thenMadd3_2 = new Mult(mult3_2,add3_2);
-    num3->pretty_print(os);
-    num2->pretty_print(os);
-    numY->pretty_print(os);
-    numX->pretty_print(os);
-    add3_3->pretty_print(os);
-    mult3_2->print(os);
-    mult3_2->print(os);
-    printf("\n");
-    add1_2_3->pretty_print(os);
-    printf("\n");
-    add1_2then3->pretty_print(os);
-    printf("\n");
-    mult1_2_3->pretty_print(os);
-    printf("\n");
-    mult1_2then3->pretty_print(os);
-    printf("\n");
-    mult1then2_3->pretty_print(os);
-    printf("\n");
-    mult3_3thenM3_2->pretty_print(os);
-    printf("\n");
-    mult3_2thenMadd3_2->pretty_print(os);
+    //new Let("x", new Num(5), new Let("y", new Add(new Var("y"), new Num(2)));
+    
+    
+
+//    Var *numX = new Var("X");
+//    Var *numY = new Var("Y");
+//    Add *add3_3 = new Add(num3,num3);
+//    Add *add3_2 = new Add(num3,num2);
+//    Mult *mult3_2 = new Mult(num3,num2);
+//    Add *add1_2_3 = new Add(new Num(1), new Add(new Num(2), new Num(3)));
+//    Add *add1_2then3 = new Add(new Add(new Num(1), new Num(2)), new Num(3));
+//    Add *mult1_2_3 = new Add(new Num(1), new Mult(new Num(2), new Num(3)));
+//    Mult *mult1_2then3 = new Mult(new Add(new Num(1), new Num(2)), new Num(3));
+//    Mult *mult1then2_3 = new Mult(new Num(1),new Add( new Num(2), new Num(3)));
+//    Mult *mult3_3thenM3_2 = new Mult(add3_3,mult3_2);
+//    Mult *mult3_2thenMadd3_2 = new Mult(mult3_2,add3_2);
+//    num3->pretty_print(os);
+//    num2->pretty_print(os);
+//    numY->pretty_print(os);
+//    numX->pretty_print(os);
+//    add3_3->pretty_print(os);
+//    mult3_2->print(os);
+//    mult3_2->print(os);
+//    printf("\n");
+//    add1_2_3->pretty_print(os);
+//    printf("\n");
+//    add1_2then3->pretty_print(os);
+//    printf("\n");
+//    mult1_2_3->pretty_print(os);
+//    printf("\n");
+//    mult1_2then3->pretty_print(os);
+//    printf("\n");
+//    mult1then2_3->pretty_print(os);
+//    printf("\n");
+//    mult3_3thenM3_2->pretty_print(os);
+//    printf("\n");
+//    mult3_2thenMadd3_2->pretty_print(os);
 
     
     CHECK((new Add(new Num(5), new Num(4)))->equals(new Add(new Num(5), new Num(4))) == true);
@@ -294,7 +421,7 @@ TEST_CASE("equals"){
     
     
     
-    std::string testString = "5";
+    testString = "5";
       CHECK ((new Num(5))->to_string() == "5");
       testString = "(5+4)";
       CHECK ((new Add(new Num(5), new Num(4)))->to_string() == testString);
