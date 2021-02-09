@@ -239,8 +239,13 @@ bool Let::has_variable(){
 }
 
 Expr* Let::subst(std::string string, Expr* exp){
-    Expr *newExpr = this->rhs->subst(string, exp);
-    return this->body->subst(this->lhs, newExpr);
+    std::string new_lhs = this->lhs;
+    Expr *new_rhs = this->rhs->subst(string, exp);
+    Expr *new_body = this->body;
+    if(new_lhs != string){
+        new_body = new_body->subst(string, exp);
+    }
+    return new Let(new_lhs, new_rhs, new_body);
 }
 
 void Let::print(std::ostream& output){
@@ -304,6 +309,50 @@ TEST_CASE("equals"){
     std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
         
 //    Let *ppLet = new Let("x", new Num(5), new Add(new Let("y", new Num(3), new Add(new Var("y"), new Num(2))), new Var("x")));
+    
+    //Always substitue RHS. Body changes iff the variable we are replacing and the bound variable are different
+      //
+      //No Change
+      //_let x = 1
+      //_in x + 2 ->subst(x, y+3)
+      Expr *let3 = new Let("x", new Num(1), new Add(new Var("y"), new Num(2)));
+      CHECK((let3)->subst("x", new Add(new Var("y"), new Num(3)))->equals(let3));
+      //Only change RHS
+      //_let x = x
+      //_in x + 2 ->subst(x, 5)
+      Expr *let4 = new Let("x",
+                 new Var("x"),
+                 new Add(new Var("x"), new Num(2)));
+      CHECK((let4->subst("x", new Num(5))
+          ->equals(new Let("x",
+                  new Num(5),
+                  new Add (new Var("x"), new Num(2))))));
+      //Only change Body
+      //_let x = 8
+      //_in x+y-> subst(“y”, 9)
+      // =
+      //_let x = 8
+      //_in x+y
+      Expr *let5 = new Let ("x",
+                 new Num(8),
+                 new Add (new Var("x"), new Var("y")));
+      CHECK((let5-> subst("y", new Num(9)))
+         ->equals(new Let ("x",
+                  new Num(8),
+                  new Add (new Var("x"), new Num(9)))));
+      //Change RHS and Body
+      //_let x = y
+      //_in x+y-> subst(“y”, 9)
+      // =
+      //_let x = 9
+      //_in x+9
+      Expr *let6 = new Let ("x",
+                 new Var ("y"),
+                 new Add (new Var("x"), new Var("y")));
+      CHECK((let6-> subst("y", new Num(9)))
+         ->equals(new Let ("x",
+                  new Num(9),
+                  new Add (new Var("x"), new Num(9)))));
     
     CHECK((new Add(new Mult(new Num(5), new Let("x", new Num(5), new Var("x"))), new Num (1)))->interp() == 26);
     CHECK((new Add(new Mult(new Num(5), new Let("x", new Num(5), new Var("x"))), new Num (1)))->pp_to_string() == "5 * (_let x = 5\n     _in  x) + 1");
