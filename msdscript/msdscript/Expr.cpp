@@ -98,26 +98,23 @@ void Add::print(std::ostream& output){
 void Add::pretty_print(std::ostream& output){
     long position = output.tellp();
     long *positionPtr = &position;
-    lhs->pretty_print_at(output, print_group_add, positionPtr);
+    lhs->pretty_print_at(output, print_group_add_or_let, positionPtr);
     output << " + ";
     rhs->pretty_print_at(output, print_group_none, positionPtr);
 }
 
 void Add::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
-    if(mode == print_group_add || mode == print_group_add_or_mult){
+    if(mode == print_group_add_or_let || mode == print_group_add || mode == print_group_add_or_mult_or_let){
         output << "(";
-    }
-    
-    lhs->pretty_print_at(output, print_group_add, pos);
-
-    output << " + ";
-    
-    rhs->pretty_print_at(output, print_group_none, pos);
-    
-    if(mode == print_group_add || mode == print_group_add_or_mult){
+        lhs->pretty_print_at(output, print_group_add_or_let, pos);
+        output << " + ";
+        rhs->pretty_print_at(output, print_group_none, pos);
         output << ")";
+    } else{
+        lhs->pretty_print_at(output, print_group_add_or_let, pos);
+        output << " + ";
+        rhs->pretty_print_at(output, print_group_none, pos);
     }
-    
 };
 
     
@@ -157,24 +154,26 @@ void Mult::print(std::ostream& output){
 void Mult::pretty_print(std::ostream& output){
     long position = output.tellp();
     long *positionPtr = &position;
-    lhs->pretty_print_at(output, print_group_add_or_mult, positionPtr);
+    lhs->pretty_print_at(output, print_group_add_or_mult_or_let, positionPtr);
     output << " * ";
     rhs->pretty_print_at(output, print_group_add, positionPtr);
 }
 
 void Mult::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
-    if(mode == print_group_add_or_mult){
+    if(mode == print_group_add_or_mult_or_let){
     output << "(";
-    }
-    lhs->pretty_print_at(output, print_group_add_or_mult, pos);
-    
-
+    lhs->pretty_print_at(output, print_group_add_or_mult_or_let, pos);
     output << " * ";
-
     rhs->pretty_print_at(output, print_group_add, pos);
-    
-    if(mode == print_group_add_or_mult){
-        output << ")";
+    output << ")";
+    }else if(mode == print_group_add_or_let){
+        lhs->pretty_print_at(output, print_group_add_or_mult_or_let, pos);
+        output << " * ";
+        rhs->pretty_print_at(output, print_group_add_or_let, pos);
+    }else{
+        lhs->pretty_print_at(output, print_group_add_or_mult_or_let, pos);
+        output << " * ";
+        rhs->pretty_print_at(output, print_group_add, pos);
     }
 };
 
@@ -264,34 +263,45 @@ void Let::print(std::ostream& output){
 
 void Let::pretty_print(std::ostream& output){
     output << "_let " << this->lhs << " = ";
-    this->rhs->pretty_print_at(output, print_group_let, 0);
+    this->rhs->pretty_print_at(output, print_group_none, 0);
     output << "\n";
     long new_pos = output.tellp();
     long *positionPtr = &new_pos;
     output << "_in  ";
-    this->body->pretty_print_at(output, print_group_let, positionPtr);
+    this->body->pretty_print_at(output, print_group_none, positionPtr);
     
 }
 void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
-    if(mode == print_group_add || mode == print_group_add_or_mult){
+    if(mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let){
         output << "(";
-    }
-    long letPos = output.tellp();
-    output << "_let ";
-    output << this->lhs << " = ";
-    this->rhs->pretty_print_at(output, print_group_let, pos);
-    //this->rhs->pretty_print_at(output, mode, pos);
-    output << "\n";
-    long spaces = letPos - *pos;
-    *pos = output.tellp();
-    for(int i = 0; i < spaces; i++){
-        output << " ";
-    }
-    output << "_in  ";
-    body->pretty_print_at(output, print_group_let, pos);
-    //body->pretty_print_at(output, mode, newPos);
-    if(mode == print_group_add || mode == print_group_add_or_mult){
+        long letPos = output.tellp();
+        output << "_let ";
+        output << this->lhs << " = ";
+        this->rhs->pretty_print_at(output, print_group_none, pos);
+        //this->rhs->pretty_print_at(output, mode, pos);
+        output << "\n";
+        long spaces = letPos - *pos;
+        *pos = output.tellp();
+        for(int i = 0; i < spaces; i++){
+            output << " ";
+        }
+        output << "_in  ";
+        body->pretty_print_at(output, print_group_none, pos);
         output << ")";
+    }else{
+        long letPos = output.tellp();
+        output << "_let ";
+        output << this->lhs << " = ";
+        this->rhs->pretty_print_at(output, print_group_none, pos);
+        //this->rhs->pretty_print_at(output, mode, pos);
+        output << "\n";
+        long spaces = letPos - *pos;
+        *pos = output.tellp();
+        for(int i = 0; i < spaces; i++){
+            output << " ";
+        }
+        output << "_in  ";
+        body->pretty_print_at(output, print_group_none, pos);
     }
 }
                
@@ -366,11 +376,11 @@ TEST_CASE("equals"){
     CHECK((new Mult(new Num(5), new Add(new Let("x", new Num(5), new Var("x")), new Num (1))))->interp() == 30);
     CHECK((new Mult(new Num(5), new Add(new Let("x", new Num(5), new Var("x")), new Num (1))))->pp_to_string() == "5 * ((_let x = 5\n      _in  x) + 1)");
     
-//    CHECK((new Mult(new Num(5), new Let("x", new Num(5), new Add(new Var("x"), new Num (1)))))->pp_to_string() == "5 * _let x = 5\n     _in  x + 1");
+    CHECK((new Mult(new Num(5), new Let("x", new Num(5), new Add(new Var("x"), new Num (1)))))->pp_to_string() == "5 * _let x = 5\n    _in  x + 1");
     CHECK((new Mult(new Num(5), new Let("x", new Num(5), new Add(new Var("x"), new Num (1)))))->interp() == 30);
     
 
-    CHECK ((new Mult( new Num (5), (new Let("x", new Num(5), new Let("y", new Num(3), new Let( "z", new Num(1), new Add (new Var("z"), new Num(4))))))))->pp_to_string() == "5 * (_let x = 5\n     _in  _let y = 3\n          _in  _let z = 1\n               _in  z + 4)");
+    CHECK ((new Mult( new Num (5), (new Let("x", new Num(5), new Let("y", new Num(3), new Let( "z", new Num(1), new Add (new Var("z"), new Num(4))))))))->pp_to_string() == "5 * _let x = 5\n    _in  _let y = 3\n         _in  _let z = 1\n              _in  z + 4");
     //Let pretty print
         CHECK ((new Let("x", new Num(5), new Let("x", new Num(1), new Add( new Var("x"), new Num(3)))))->pp_to_string() == "_let x = 5\n_in  _let x = 1\n     _in  x + 3");
     

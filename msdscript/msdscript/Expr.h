@@ -18,7 +18,8 @@ typedef enum {
   print_group_none,
   print_group_add,
   print_group_add_or_mult,
-    print_group_let
+    print_group_add_or_let,
+    print_group_add_or_mult_or_let
 } print_mode_t;
 
 
