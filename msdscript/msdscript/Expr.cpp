@@ -420,13 +420,12 @@ void Let::pretty_print(std::ostream& output){
     
 }
 void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
-    if(mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let){
+    if(mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
         output << "(";
         long letPos = output.tellp();
         output << "_let ";
         output << this->lhs << " = ";
         this->rhs->pretty_print_at(output, print_group_none, pos);
-        //this->rhs->pretty_print_at(output, mode, pos);
         output << "\n";
         long spaces = letPos - *pos;
         *pos = output.tellp();
@@ -435,26 +434,10 @@ void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
         }
         output << "_in  ";
         body->pretty_print_at(output, print_group_none, pos);
-        output << ")";
-    }else{
-        long letPos = output.tellp();
-        output << "_let ";
-        output << this->lhs << " = ";
-        this->rhs->pretty_print_at(output, print_group_none, pos);
-        //this->rhs->pretty_print_at(output, mode, pos);
-        output << "\n";
-        long spaces = letPos - *pos;
-        *pos = output.tellp();
-        for(int i = 0; i < spaces; i++){
-            output << " ";
-        }
-        output << "_in  ";
-        body->pretty_print_at(output, print_group_none, pos);
-    }
+        if(mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
+            output << ")";
 }
                
-
-
 TEST_CASE("equals"){
     std::ostream& os = std::cout;
     Num *num1 = new Num(1);
