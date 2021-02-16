@@ -7,155 +7,10 @@
 
 #include "Expr.h"
 #include "catch.h"
+#include "Parse.h"
 #include <stdexcept>
 
-static void consume(std::istream &in, int expect){
-    int c = in.get();
-    if(c != expect){
-        char c_as_char = (char)c;
-        char expect_as_char = (char) expect;
-        std::cout << "your c value was " << c_as_char << " but we expected: " << expect_as_char;
-        throw std::runtime_error("consume mismatch");
-    }
-}
 
-static void skip_whitespace(std::istream &in){
-    while(1){
-        int c = in.peek();
-        if(!isspace(c))
-            break;
-        consume(in, c);
-    }
-}
-
-static void parse_keyword(std::istream &in, std::string keyword){
-    std::string word = "";
-    for(int i = 0; i < keyword.length(); i++){
-        word += in.get();
-    }
-    if(word != keyword)
-        throw std::runtime_error("keyword not found");
-    return;
-}
-
-Expr* Expr::parse_var(std::istream &in){
-    std::string var = "";
-    skip_whitespace(in);
-    int c = in.peek();
-    while(isalpha(c)){
-        c = in.get();
-        var += c;
-        c = in.peek();
-    }
-    return new Var(var);
-}
-
-Expr* Expr::parse_let(std::istream &in){
-    skip_whitespace(in);
-    consume(in, '_');
-    parse_keyword(in, "let");
-    skip_whitespace(in);
-    Expr *v = parse_var(in);
-    skip_whitespace(in);
-    consume(in, '=');
-    skip_whitespace(in);
-    Expr *rhs = parse_expr(in);
-    skip_whitespace(in);
-    consume(in, '_');
-    parse_keyword(in, "in");
-    skip_whitespace(in);
-    Expr *body = parse_expr(in);
-    return new Let(v->to_string(), rhs, body);
-}
-
-Expr* Expr::parse(std::istream &in){
-    Expr *e = parse_expr(in);
-    return e;
-}
-
-Expr* Expr::parse_str(std::string s){
-    std::istringstream stream1(s);
-    Expr *e = parse_expr(stream1);
-    return e;
-}
-
-Expr* Expr::parse_num(std::istream &in){
-    int n = 0;
-    bool negative = false;
-    
-    if(in.peek() == '-'){
-        negative = true;
-        consume(in, '-');
-    }
-    while(1){
-        int c = in.peek();
-        if(isdigit(c)){
-            consume(in, c);
-            n = n*10 + (c-'0');
-        }else
-            break;
-    }
-    if(negative)
-        n = -n;
-    return new Num(n);
-}
-
-Expr* Expr::parse_expr(std::istream &in){
-    Expr *e;
-    
-    e = parse_addend(in);
-    
-    skip_whitespace(in);
-    
-    int c = in.peek();
-    if(c == '+') {
-        consume(in, '+');
-        Expr *rhs = parse_expr(in);
-        return new Add(e, rhs);
-    }else{
-        return e;
-    }
-}
-
-Expr* Expr::parse_addend(std::istream &in){
-    Expr *e;
-    e = parse_multicand(in);
-    
-    skip_whitespace(in);
-    int c = in.peek();
-    if(c == '*') {
-        consume(in, '*');
-        Expr *rhs = parse_addend(in);
-        return new Mult(e, rhs);
-    }else{
-        return e;
-    }
-}
-
-Expr* Expr::parse_multicand(std::istream &in){
-    skip_whitespace(in);
-    
-    int c = in.peek();
-    if(( c == '-') || isdigit(c))
-        return parse_num(in);
-    else if(c == '('){
-        consume(in, '(');
-        Expr *e = parse_expr(in);
-        skip_whitespace(in);
-        c = in.get();
-        if(c != ')')
-            throw std::runtime_error("missing closing parenthesis");
-        return e;
-    } else if(isalpha(c)){
-        return parse_var(in);
-    } else if(c == '_'){
-        return parse_let(in);
-    }
-    else{
-        consume(in, c);
-        throw std::runtime_error("invalid input");
-    }
-}
 
 std::string Expr::to_string(){
     std::ostream output(nullptr);
@@ -438,8 +293,9 @@ void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
             output << ")";
 }
                
-TEST_CASE("equals"){
+TEST_CASE("TESTS"){
     std::ostream& os = std::cout;
+    std::stringstream ss;
     Num *num1 = new Num(1);
     Num *num2 = new Num(2);
     Num *num3 = new Num(3);
@@ -454,6 +310,20 @@ TEST_CASE("equals"){
     Let *let2 = new Let("x", new Num(2), new Add(new Num(5), new Var("x")));
     //Let *let3 = new Let("x", new Num(2), new Add(new Num(5), new Num(2)));
     std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
+    ss.str("_notlet");
+    CHECK((parse_str("1")->interp()==1));
+    CHECK((parse_str("-1")->interp()==-1));
+    CHECK((parse_str("1*1")->interp()==1));
+    CHECK_THROWS_WITH((parse_str("(1*1")->interp()), "missing closing parenthesis");
+    CHECK_THROWS_WITH((parse_str("^1*1")->interp()), "invalid input");
+    CHECK_THROWS_WITH(parse_keyword(ss, "_let"), "keyword not found");
+    ss.str("x");
+    CHECK_THROWS_WITH(consume(ss, 1), "consume mismatch");
+    ss.str(pp_let1);
+    CHECK((parse_let(ss)->interp()==10));
+    
+    
+    
         
     //Always substitue RHS. Body changes iff the variable we are replacing and the bound variable are different
       //
@@ -558,41 +428,6 @@ TEST_CASE("equals"){
     //Test 11 [Add (let, let)]
         testString = "(_let x = 1\n _in  x + 2) + _let y = 3\n               _in  y + 4";
         CHECK((new Add( new Let( "x", new Num(1), new Add( new Var("x"), new Num(2))), new Let( "y", new Num(3), new Add( new Var("y"), new Num(4)))))->pp_to_string() == testString);
-    
-
-//    Var *numX = new Var("X");
-//    Var *numY = new Var("Y");
-//    Add *add3_3 = new Add(num3,num3);
-//    Add *add3_2 = new Add(num3,num2);
-//    Mult *mult3_2 = new Mult(num3,num2);
-//    Add *add1_2_3 = new Add(new Num(1), new Add(new Num(2), new Num(3)));
-//    Add *add1_2then3 = new Add(new Add(new Num(1), new Num(2)), new Num(3));
-//    Add *mult1_2_3 = new Add(new Num(1), new Mult(new Num(2), new Num(3)));
-//    Mult *mult1_2then3 = new Mult(new Add(new Num(1), new Num(2)), new Num(3));
-//    Mult *mult1then2_3 = new Mult(new Num(1),new Add( new Num(2), new Num(3)));
-//    Mult *mult3_3thenM3_2 = new Mult(add3_3,mult3_2);
-//    Mult *mult3_2thenMadd3_2 = new Mult(mult3_2,add3_2);
-//    num3->pretty_print(os);
-//    num2->pretty_print(os);
-//    numY->pretty_print(os);
-//    numX->pretty_print(os);
-//    add3_3->pretty_print(os);
-//    mult3_2->print(os);
-//    mult3_2->print(os);
-//    printf("\n");
-//    add1_2_3->pretty_print(os);
-//    printf("\n");
-//    add1_2then3->pretty_print(os);
-//    printf("\n");
-//    mult1_2_3->pretty_print(os);
-//    printf("\n");
-//    mult1_2then3->pretty_print(os);
-//    printf("\n");
-//    mult1then2_3->pretty_print(os);
-//    printf("\n");
-//    mult3_3thenM3_2->pretty_print(os);
-//    printf("\n");
-//    mult3_2thenMadd3_2->pretty_print(os);
 
     
     CHECK((new Add(new Num(5), new Num(4)))->equals(new Add(new Num(5), new Num(4))) == true);

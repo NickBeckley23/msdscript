@@ -22,11 +22,6 @@ typedef enum {
     print_group_add_or_mult_or_let
 } print_mode_t;
 
-static void consume(std::istream &in, int expect);
-
-static void skip_whitespace(std::istream &in);
-
-static void parse_keyword(std::istream &in, std::string keyword);
 
 class Expr {
 public:
@@ -58,21 +53,7 @@ public:
     //turns pretty printed expression into string for easy comparison
     std::string pp_to_string();
     
-    Expr *parse_expr(std::istream &in);
     
-    Expr *parse_num(std::istream &in);
-    
-    Expr *parse_addend(std::istream &in);
-    
-    Expr *parse_multicand(std::istream &in);
-    
-    Expr *parse(std::istream &in);
-    
-    Expr *parse_str(std::string s);
-    
-    Expr *parse_var(std::istream &in);
-    
-    Expr *parse_let(std::istream &in);
     
 };
     

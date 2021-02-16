@@ -8,6 +8,7 @@
 #define CATCH_CONFIG_RUNNER
 #include "cmdline.h"
 #include "Expr.h"
+#include "Parse.h"
 #include <iostream>
 
 void use_arguments(int argc,char * argv[]){
@@ -27,8 +28,8 @@ void use_arguments(int argc,char * argv[]){
             std::cerr << "Tests already passed yo\n";
             exit(1);
         }else if(arg == "--interp"){
-            Expr *e = nullptr;
-            e = e->parse_expr(std::cin);
+            Expr *e = parse_expr(std::cin);
+//            e = Parse::
             try{
             std::cout << e->interp();
             exit(0);
@@ -38,12 +39,12 @@ void use_arguments(int argc,char * argv[]){
             }
         }else if(arg == "--print"){
             Expr *e = nullptr;
-            e = e->parse_expr(std::cin);
+            e = parse_expr(std::cin);
             e->print(std::cout);
             exit(0);
         }else if(arg == "--pretty-print"){
             Expr *e = nullptr;
-            e = e->parse_expr(std::cin);
+            e = parse_expr(std::cin);
             std::cout << e->pp_to_string();
             exit(0);
         }else{

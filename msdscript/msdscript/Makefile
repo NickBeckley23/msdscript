@@ -1,6 +1,6 @@
-INCS = cmdline.h catch.h Expr.h
+INCS = cmdline.h catch.h Expr.h Parse.h
 
-OBJS = main.o cmdline.o Expr.o
+OBJS = main.o cmdline.o Expr.o Parse.o
 
 CXX = c++
 CXXFLAGS = --std=c++14 -O2
