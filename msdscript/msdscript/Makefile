@@ -20,3 +20,6 @@ cmdline.o: cmdline.cpp $(INCS)
 
 Expr.o: Expr.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c Expr.cpp
+
+parse.o: Parse.cpp $(INCS)
+	$(CXX) $(CXXFLAGS) -c Parse.cpp
