@@ -5,3 +5,4 @@ msdscript/cmake-build-debug
 **.pbxuser
 **/DerivedData/
 *.DS_Store
+/msdscript/test_msdscript/test_msdscript/msdscript?
