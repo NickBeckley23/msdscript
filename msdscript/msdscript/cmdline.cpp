@@ -12,7 +12,8 @@
 #include <iostream>
 
 void use_arguments(int argc,char * argv[]){
-    if(argc == 1) exit(1);
+    if(argc == 1)
+        exit(1);
     bool testSeen = false;
     for(int i = 1; i < argc; i++){
         std::string arg = argv[i];
@@ -21,7 +22,8 @@ void use_arguments(int argc,char * argv[]){
             exit(0);
         }else if(arg == "--test" && testSeen == false){
             int fail = Catch::Session().run(1, argv);
-            if(fail != 0) exit(1);
+            if(fail != 0)
+                exit(1);
             std::cout << "Tests Passed\n";
             testSeen = true;
         }else if(arg == "--test" && testSeen == true){
@@ -29,29 +31,16 @@ void use_arguments(int argc,char * argv[]){
             exit(1);
         }else if(arg == "--interp"){
             Expr *e = parse_expr(std::cin);
-//            e = Parse::
-            try{
-            std::cout << e->interp();
-            std::cout << "\n";
-            exit(0);
-            }catch(std::runtime_error& e){
-                std::cout << "bad input could not interp, exiting";
-                exit(1);
-            }
+            std::cout << e->interp() << "\n";
         }else if(arg == "--print"){
-            Expr *e = nullptr;
-            e = parse_expr(std::cin);
+            Expr *e = parse_expr(std::cin);
             e->print(std::cout);
             std::cout << "\n";
-            exit(0);
         }else if(arg == "--pretty-print"){
-            Expr *e = nullptr;
-            e = parse_expr(std::cin);
-            std::cout << e->pp_to_string();
-            std::cout << "\n";
-            exit(0);
+            Expr *e = parse_expr(std::cin);
+            std::cout << e->pp_to_string() << "\n";
         }else{
-            std::cerr << "Invalid argument\n";
+            std::cerr << "Invalid argument";
             exit(1);
         }
     }
