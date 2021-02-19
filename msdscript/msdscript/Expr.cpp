@@ -311,9 +311,8 @@ TEST_CASE("TESTS"){
     //Let *let3 = new Let("x", new Num(2), new Add(new Num(5), new Num(2)));
     std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
     ss.str("_notlet");
-    CHECK((parse_str("1")->interp()==1));
-    CHECK((parse_str("-1")->interp()==-1));
-    CHECK((parse_str("1*1")->interp()==1));
+    CHECK((parse_str("1")->equals(new Num(1))));
+    CHECK((parse_str("-1")->equals(new Num(-1))));
     CHECK_THROWS_WITH((parse_str("(1*1")->interp()), "missing closing parenthesis");
     CHECK_THROWS_WITH((parse_str("^1*1")->interp()), "invalid input");
     CHECK_THROWS_WITH(parse_keyword(ss, "_let"), "keyword not found");
