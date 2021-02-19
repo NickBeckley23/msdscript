@@ -32,6 +32,7 @@ void use_arguments(int argc,char * argv[]){
 //            e = Parse::
             try{
             std::cout << e->interp();
+            std::cout << "\n";
             exit(0);
             }catch(std::runtime_error& e){
                 std::cout << "bad input could not interp, exiting";
@@ -41,11 +42,13 @@ void use_arguments(int argc,char * argv[]){
             Expr *e = nullptr;
             e = parse_expr(std::cin);
             e->print(std::cout);
+            std::cout << "\n";
             exit(0);
         }else if(arg == "--pretty-print"){
             Expr *e = nullptr;
             e = parse_expr(std::cin);
             std::cout << e->pp_to_string();
+            std::cout << "\n";
             exit(0);
         }else{
             std::cerr << "Invalid argument\n";

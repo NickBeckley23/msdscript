@@ -13,7 +13,6 @@ void consume(std::istream &in, int expect){
     if(c != expect){
         char c_as_char = (char)c;
         char expect_as_char = (char) expect;
-        std::cout << "your c value was " << c_as_char << " but we expected: " << expect_as_char;
         throw std::runtime_error("consume mismatch");
     }
 }

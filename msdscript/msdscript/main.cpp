@@ -12,6 +12,11 @@
 
 
 int main(int argc,char * argv[]) {
-    use_arguments(argc,argv);
-    return 0;
+    try{
+        use_arguments(argc,argv);
+        return 0;
+    } catch(std::runtime_error e){
+        std::cerr << e.what();
+        exit(1);
+    }
 }
