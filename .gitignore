@@ -6,3 +6,4 @@ msdscript/cmake-build-debug
 **/DerivedData/
 *.DS_Store
 /msdscript/test_msdscript/test_msdscript/msdscript?
+/msdscript/test_msdscript/test_msdscript/test_msdscript
