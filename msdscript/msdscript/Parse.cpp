@@ -7,14 +7,12 @@
 
 #include "Parse.h"
 #include "Expr.h"
+#include "catch.h"
 
 void consume(std::istream &in, int expect){
     int c = in.get();
-    if(c != expect){
-        char c_as_char = (char)c;
-        char expect_as_char = (char) expect;
+    if(c != expect)
         throw std::runtime_error("consume mismatch");
-    }
 }
 
 void skip_whitespace(std::istream &in){
@@ -153,4 +151,20 @@ Expr* parse_multicand(std::istream &in){
         consume(in, c);
         throw std::runtime_error("invalid input");
     }
+}
+
+TEST_CASE("PARSE"){
+    //std::ostream& os = std::cout;
+    std::stringstream ss;
+    std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
+    ss.str("_notlet");
+    CHECK((parse_str("1")->equals(new Num(1))));
+    CHECK((parse_str("-1")->equals(new Num(-1))));
+    CHECK_THROWS_WITH((parse_str("(1*1")->interp()), "missing closing parenthesis");
+    CHECK_THROWS_WITH((parse_str("^1*1")->interp()), "invalid input");
+    CHECK_THROWS_WITH(parse_keyword(ss, "_let"), "keyword not found");
+    ss.str("x");
+    CHECK_THROWS_WITH(consume(ss, 1), "consume mismatch");
+    ss.str(pp_let1);
+    CHECK((parse_let(ss)->interp()==10));
 }
