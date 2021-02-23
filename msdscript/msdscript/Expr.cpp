@@ -278,11 +278,12 @@ void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     if(mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
         output << "(";
     long letPos = output.tellp();
+    long spaces = letPos - *pos;
     output << "_let ";
     output << this->lhs << " = ";
     this->rhs->pretty_print_at(output, print_group_none, pos);
     output << "\n";
-    long spaces = letPos - *pos;
+    //long spaces = letPos - *pos;
     *pos = output.tellp();
     for(int i = 0; i < spaces; i++){
         output << " ";
