@@ -99,8 +99,8 @@ void Add::print(std::ostream& output){
 };
 
 void Add::pretty_print(std::ostream& output){
-    long position = output.tellp();
-    long *positionPtr = &position;
+    long pos = 0;
+    long *positionPtr = &pos;
     lhs->pretty_print_at(output, print_group_add_or_let, positionPtr);
     output << " + ";
     rhs->pretty_print_at(output, print_group_none, positionPtr);
@@ -155,8 +155,10 @@ void Mult::print(std::ostream& output){
 };
 
 void Mult::pretty_print(std::ostream& output){
-    long position = output.tellp();
-    long *positionPtr = &position;
+    long pos = 0;
+    long *positionPtr = &pos;
+//    long position = output.tellp();
+//    long *positionPtr = &position;
     lhs->pretty_print_at(output, print_group_add_or_mult_or_let, positionPtr);
     output << " * ";
     rhs->pretty_print_at(output, print_group_add, positionPtr);
@@ -265,11 +267,12 @@ void Let::print(std::ostream& output){
 }
 
 void Let::pretty_print(std::ostream& output){
+    long pos = 0;
+    long *positionPtr = &pos;
     output << "_let " << this->lhs << " = ";
-    this->rhs->pretty_print_at(output, print_group_none, 0);
+    this->rhs->pretty_print_at(output, print_group_none, positionPtr);
     output << "\n";
-    long new_pos = output.tellp();
-    long *positionPtr = &new_pos;
+    *positionPtr = output.tellp();
     output << "_in  ";
     this->body->pretty_print_at(output, print_group_none, positionPtr);
     
