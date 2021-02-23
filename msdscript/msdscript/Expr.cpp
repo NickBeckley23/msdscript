@@ -157,8 +157,6 @@ void Mult::print(std::ostream& output){
 void Mult::pretty_print(std::ostream& output){
     long pos = 0;
     long *positionPtr = &pos;
-//    long position = output.tellp();
-//    long *positionPtr = &position;
     lhs->pretty_print_at(output, print_group_add_or_mult_or_let, positionPtr);
     output << " * ";
     rhs->pretty_print_at(output, print_group_add, positionPtr);
@@ -286,7 +284,6 @@ void Let::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     output << this->lhs << " = ";
     this->rhs->pretty_print_at(output, print_group_none, pos);
     output << "\n";
-    //long spaces = letPos - *pos;
     *pos = output.tellp();
     for(int i = 0; i < spaces; i++){
         output << " ";
