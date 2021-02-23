@@ -31,7 +31,9 @@ void use_arguments(int argc,char * argv[]){
             exit(1);
         }else if(arg == "--interp"){
             Expr *e = parse_expr(std::cin);
-            std::cout << e->interp() << "\n";
+            Val *out = e->interp();
+            out->print(std::cout);
+            std::cout << "\n";
         }else if(arg == "--print"){
             Expr *e = parse_expr(std::cin);
             e->print(std::cout);
