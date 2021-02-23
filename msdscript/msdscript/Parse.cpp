@@ -43,7 +43,7 @@ Expr* parse_var(std::istream &in){
         var += c;
         c = in.peek();
     }
-    return new Var(var);
+    return new VarExpr(var);
 }
 
 Expr* parse_let(std::istream &in){
@@ -61,7 +61,7 @@ Expr* parse_let(std::istream &in){
     parse_keyword(in, "in");
     skip_whitespace(in);
     Expr *body = parse_expr(in);
-    return new Let(v->to_string(), rhs, body);
+    return new LetExpr(v->to_string(), rhs, body);
 }
 
 //Expr* parse(std::istream &in){
@@ -93,7 +93,7 @@ Expr* parse_num(std::istream &in){
     }
     if(negative)
         n = -n;
-    return new Num(n);
+    return new NumExpr(n);
 }
 
 Expr* parse_expr(std::istream &in){
@@ -107,7 +107,7 @@ Expr* parse_expr(std::istream &in){
     if(c == '+') {
         consume(in, '+');
         Expr *rhs = parse_expr(in);
-        return new Add(e, rhs);
+        return new AddExpr(e, rhs);
     }else{
         return e;
     }
@@ -122,7 +122,7 @@ Expr* parse_addend(std::istream &in){
     if(c == '*') {
         consume(in, '*');
         Expr *rhs = parse_addend(in);
-        return new Mult(e, rhs);
+        return new MultExpr(e, rhs);
     }else{
         return e;
     }
@@ -158,13 +158,13 @@ TEST_CASE("PARSE"){
     std::stringstream ss;
     std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
     ss.str("_notlet");
-    CHECK((parse_str("1")->equals(new Num(1))));
-    CHECK((parse_str("-1")->equals(new Num(-1))));
+    CHECK((parse_str("1")->equals(new NumExpr(1))));
+    CHECK((parse_str("-1")->equals(new NumExpr(-1))));
     CHECK_THROWS_WITH((parse_str("(1*1")->interp()), "missing closing parenthesis");
     CHECK_THROWS_WITH((parse_str("^1*1")->interp()), "invalid input");
     CHECK_THROWS_WITH(parse_keyword(ss, "_let"), "keyword not found");
     ss.str("x");
     CHECK_THROWS_WITH(consume(ss, 1), "consume mismatch");
     ss.str(pp_let1);
-    CHECK((parse_let(ss)->interp()==10));
+    CHECK((parse_let(ss)->interp()->equals(new NumVal(10))));
 }
