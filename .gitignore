@@ -7,4 +7,4 @@ msdscript/cmake-build-debug
 *.DS_Store
 /msdscript/test_msdscript/test_msdscript/msdscript?
 /msdscript/test_msdscript/test_msdscript/test_msdscript
-/msdscript/test_msdscript/test_msdscript/test_msdscript/testers
+/msdscript/test_msdscript/test_msdscript/test_msdscript/testers/
