@@ -87,6 +87,11 @@ std::string random_expr_string() {
             return "(" + random_expr_string() + "*" + random_expr_string() + ")";
         else
             return random_expr_string() + "*" + random_expr_string();
+        else if(n == 8)
+            return "_if 1 == 1 _then " + random_expr_string() + " _else " + random_expr_string();
+    
     else
+        if(n > 5)
+            return "(_if 1 == 0 _then " + random_expr_string() + " _else " + random_expr_string() + ")";
         return "_let x = " + random_expr_string() + "_in " + random_expr_string();
 }
