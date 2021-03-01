@@ -39,7 +39,7 @@ Val* NumVal::mult_to(Val* rhs){
 }
 
 bool NumVal::is_true(){
-    return false;
+    throw std::runtime_error("Test expression is not a boolean");
 }
 
 void NumVal::print(std::ostream& output){
