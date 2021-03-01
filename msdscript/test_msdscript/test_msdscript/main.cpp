@@ -51,13 +51,22 @@ int main(int argc, const char * argv[]) {
         ExecResult interp1_result = exec_program(2, interp1_argv, in);
         ExecResult print1_result = exec_program(2, print1_argv, in);
         ExecResult pprint1_result = exec_program(2, pprint1_argv, in);
-        
-            if (interp_result.out != interp1_result.out)
-                throw std::runtime_error("different result for interp");
-            if (print_result.out != print1_result.out)
-                throw std::runtime_error("different result for print");
-            if (pprint_result.out != pprint1_result.out)
-                throw std::runtime_error("different result for pretty-print");
+
+            if (interp_result.out != interp1_result.out){
+                            std::cout << "result 1: " << interp_result.out << "\n";
+                            std::cout << "result 2: " << interp1_result.out << "\n";
+                            throw std::runtime_error("different interp results");
+                        }
+                        if (print_result.out != print1_result.out){
+                            std::cout << "result 1: " << print_result.out << "\n";
+                            std::cout << "result 2: " << print1_result.out << "\n";
+                            throw std::runtime_error("different print results");
+                        }
+                        if (pprint_result.out != pprint1_result.out){
+                            std::cout << "result 1: " << pprint_result.out << "\n";
+                            std::cout << "result 2: " << pprint1_result.out << "\n";
+                            throw std::runtime_error("different pretty print results");
+                        }
         }
     }
     return 0;
