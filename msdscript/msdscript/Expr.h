@@ -16,11 +16,12 @@
 
 
 typedef enum {
-  print_group_none,
-  print_group_add,
-  print_group_add_or_mult,
+    print_group_none,
+    print_group_add,
     print_group_add_or_let,
-    print_group_add_or_mult_or_let
+    print_group_add_or_mult_or_let,
+    print_group_add_or_eq,
+    print_group_eq
 } print_mode_t;
 
 class Val;
@@ -139,4 +140,53 @@ class LetExpr : public Expr {
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
     
 };
+
+class BoolExpr : public Expr{
+    public:
+        bool boolVal;
+        
+    BoolExpr(bool boolVal);
+    
+    bool equals(Expr *other);
+    Val* interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
+    void print(std::ostream& output);
+    void pretty_print(std::ostream& output);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
+};
+
+class EqExpr : public Expr {
+    public:
+        Expr *lhs;
+        Expr *rhs;
+        
+    EqExpr(Expr *lhs, Expr *rhs);
+    
+    bool equals(Expr *other);
+    Val* interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
+    void print(std::ostream& output);
+    void pretty_print(std::ostream& output);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
+    };
+
+class IfExpr : public Expr {
+    public:
+    Expr *test_part;
+    Expr *then_part;
+    Expr *else_part;
+        
+    IfExpr(Expr *_if, Expr *_then, Expr *_else);
+    
+    bool equals(Expr *other);
+    Val* interp();
+    bool has_variable();
+    Expr* subst(std::string string, Expr *exp);
+    void print(std::ostream& output);
+    void pretty_print(std::ostream& output);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
+    };
+
 #endif /* Expr_hpp */

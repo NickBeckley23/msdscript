@@ -38,6 +38,44 @@ Val* NumVal::mult_to(Val* rhs){
     return new NumVal(this->val * other_num->val);
 }
 
+bool NumVal::is_true(){
+    return false;
+}
+
 void NumVal::print(std::ostream& output){
     output << this->val;
+}
+
+BoolVal::BoolVal(bool boolVal){
+    this->boolVal = boolVal;
+}
+
+Expr* BoolVal::to_expr(){
+    return new BoolExpr(this->boolVal);
+}
+
+bool BoolVal::equals(Val* other){
+    BoolVal *b = dynamic_cast<BoolVal*>(other);
+    if(b == NULL)
+        return false;
+    else
+        return this->boolVal == b->boolVal;
+}
+
+Val* BoolVal::add_to(Val* rhs){
+    throw std::runtime_error("addition of non-number");
+}
+Val* BoolVal::mult_to(Val* rhs){
+    throw std::runtime_error("multiplication of non-number");
+}
+
+void BoolVal::print(std::ostream& output){
+    if(this->boolVal)
+        output << "_true";
+    else
+        output << "_false";
+}
+
+bool BoolVal::is_true(){
+    return this->boolVal;
 }

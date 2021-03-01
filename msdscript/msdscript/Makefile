@@ -26,7 +26,7 @@ main.o: ../test_msdscript/test_msdscript/main.cpp $(INCS2)
 	$(CXX) $(CXXFLAGS) -c main.cpp
 
 exec.o: ../test_msdscript/test_msdscript/exec.cpp $(INCS2)
-	$(CXX) $(CXXFLAGS) -C exec.cpp
+	$(CXX) $(CXXFLAGS) -c exec.cpp
 
 cmdline.o: cmdline.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c cmdline.cpp
