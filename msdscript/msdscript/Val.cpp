@@ -7,6 +7,7 @@
 
 #include "Val.h"
 #include "Expr.h"
+#include "catch.h"
 
 
 NumVal::NumVal(int num){
@@ -31,10 +32,11 @@ Val* NumVal::add_to(Val* rhs){
         throw std::runtime_error("add of non-number");
     return new NumVal(this->val + other_num->val);
 }
+
 Val* NumVal::mult_to(Val* rhs){
     NumVal *other_num = dynamic_cast<NumVal*>(rhs);
     if(other_num == NULL)
-        throw std::runtime_error("add of non-number");
+        throw std::runtime_error("mult of non-number");
     return new NumVal(this->val * other_num->val);
 }
 
@@ -65,6 +67,7 @@ bool BoolVal::equals(Val* other){
 Val* BoolVal::add_to(Val* rhs){
     throw std::runtime_error("addition of non-number");
 }
+
 Val* BoolVal::mult_to(Val* rhs){
     throw std::runtime_error("multiplication of non-number");
 }
@@ -78,4 +81,25 @@ void BoolVal::print(std::ostream& output){
 
 bool BoolVal::is_true(){
     return this->boolVal;
+}
+
+TEST_CASE("ValClass"){
+    std::string testString = "";
+    CHECK((new NumVal(5))->equals(new NumVal(5))==true);
+    CHECK((new NumVal(5))->equals(NULL)==false);
+    CHECK_THROWS_WITH((new NumVal(5))->add_to(NULL), "add of non-number");
+    CHECK_THROWS_WITH((new NumVal(5))->mult_to(NULL), "mult of non-number");
+    CHECK_THROWS_WITH((new NumVal(5))->is_true(), "Test expression is not a boolean");
+    CHECK((new BoolVal(true))->is_true());
+    CHECK((new BoolVal(true))->to_expr()->equals(new BoolExpr(true)));
+    CHECK((new BoolVal(true))->equals(NULL)==false);
+    testString = "5";
+    CHECK(((new NumVal(5))->to_expr()->to_string() == "5"));
+    CHECK(((new BoolVal(true))->to_expr()->pp_to_string() == "_true"));
+    
+    CHECK_THROWS_WITH((new BoolVal(true))->add_to(new NumVal(5)), "addition of non-number");
+    CHECK_THROWS_WITH((new BoolVal(true))->mult_to(new NumVal(5)), "multiplication of non-number");
+    
+    
+    
 }
