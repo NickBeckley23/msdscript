@@ -8,6 +8,7 @@
 #include "Expr.h"
 #include "catch.h"
 #include "Parse.h"
+#include "Val.h"
 #include <stdexcept>
 
 
@@ -44,9 +45,6 @@ Val* NumExpr::interp(){
     return new NumVal(this->val);
 }
 
-bool NumExpr::has_variable(){
-    return false;
-}
 
 Expr* NumExpr::subst(std::string string,Expr *exp){
     return this;
@@ -80,10 +78,6 @@ bool AddExpr::equals(Expr *other){
 
 Val* AddExpr::interp(){
     return this->lhs->interp()->add_to(this->rhs->interp());
-};
-
-bool AddExpr::has_variable(){
-    return (this->lhs->has_variable() || this->rhs->has_variable());
 };
 
 Expr* AddExpr::subst(std::string string, Expr *exp){
@@ -132,10 +126,6 @@ bool MultExpr::equals(Expr *other){
 
 Val* MultExpr::interp(){
     return this->lhs->interp()->mult_to(this->rhs->interp());
-};
-
-bool MultExpr::has_variable(){
-    return (this->lhs->has_variable() || this->rhs->has_variable());
 };
 
 Expr* MultExpr::subst(std::string string, Expr *exp){
@@ -192,10 +182,6 @@ Val* VarExpr::interp(){
     throw std::runtime_error("variable has no value");
 };
 
-bool VarExpr::has_variable(){
-    return true;
-};
-
 Expr* VarExpr::subst(std::string string, Expr *exp){
     if(this->var == string)
         return exp;
@@ -232,10 +218,6 @@ bool LetExpr::equals(Expr *other){
 Val* LetExpr::interp(){
     Val* n = this->rhs->interp();
     return this->body->subst(this->lhs, n->to_expr())->interp();
-}
-
-bool LetExpr::has_variable(){
-    return (this->rhs->has_variable() || this->body->has_variable());
 }
 
 Expr* LetExpr::subst(std::string string, Expr* exp){
@@ -304,10 +286,6 @@ Val* BoolExpr::interp(){
     return new BoolVal(this->boolVal);
 }
 
-bool BoolExpr::has_variable(){
-    return false;
-}
-
 Expr* BoolExpr::subst(std::string string,Expr *exp){
     return this;
 }
@@ -341,16 +319,12 @@ bool EqExpr::equals(Expr *other){
 };
 
 Val* EqExpr::interp(){
-    return new BoolVal(this->lhs->interp()->equals(this->rhs->interp()));
-};
-
-bool EqExpr::has_variable(){
-    return (this->lhs->has_variable() || this->rhs->has_variable());
+    return new BoolVal(lhs->interp()->equals(rhs->interp()));
 };
 
 Expr* EqExpr::subst(std::string string, Expr *exp){
     return new EqExpr(lhs->subst(string, exp), rhs->subst(string, exp));
-}
+};
 
 void EqExpr::print(std::ostream& output){
     output << "(";
@@ -366,7 +340,7 @@ void EqExpr::pretty_print(std::ostream& output){
     lhs->pretty_print_at(output, print_group_eq, positionPtr);
     output << " == ";
     rhs->pretty_print_at(output, print_group_none, positionPtr);
-}
+};
 
 void EqExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     if(mode == print_group_none){
@@ -394,17 +368,13 @@ bool IfExpr::equals(Expr *other){
         return false;
     else
         return (this->test_part->equals(o->test_part) && this->then_part->equals(o->then_part) && this->else_part->equals(o->else_part));
-}
+};
 
 Val* IfExpr::interp(){
     if(test_part->interp()->is_true())
         return then_part->interp();
     else
         return else_part->interp();
-}
-
-bool IfExpr::has_variable(){
-    return (this->test_part->has_variable() || this->then_part->has_variable() || this->else_part->has_variable());
 }
 
 Expr* IfExpr::subst(std::string string, Expr* exp){
@@ -460,15 +430,152 @@ void IfExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos)
         output << ")";
 }
 
+FunExpr::FunExpr(std::string formal_arg, Expr *body){
+    this->formal_arg = formal_arg;
+    this->body = body;
+}
+
+bool FunExpr::equals(Expr *other){
+    FunExpr *o = dynamic_cast<FunExpr*>(other);
+    if(o == NULL)
+        return false;
+    else
+        return (this->formal_arg == o->formal_arg) && this->body->equals(o->body);
+}
+
+Val* FunExpr::interp(){
+    return new FunVal(this->formal_arg, this->body);
+}
+
+Expr* FunExpr::subst(std::string string, Expr* exp){
+    if(this->formal_arg != string){
+        Expr *new_body = body->subst(string, exp);
+        return new FunExpr(this->formal_arg, new_body);
+    }
+    return this;
+}
+
+void FunExpr::print(std::ostream& output){
+    output << "(_fun (";
+    output << this->formal_arg;
+    output << ") ";
+    this->body->print(output);
+    output << ")";
+}
+
+void FunExpr::pretty_print(std::ostream& output){
+//    long pos = 0;
+//    long *positionPtr = &pos;
+//    output << "_if ";
+//    this->test_part->pretty_print_at(output, print_group_none, positionPtr);
+//    output << "\n";
+//    *positionPtr = output.tellp();
+//    output << "_then ";
+//    this->then_part->pretty_print_at(output, print_group_none, positionPtr);
+//    output << "\n";
+//    *positionPtr = output.tellp();
+//    output << "_else ";
+//    this->else_part->pretty_print_at(output, print_group_none, positionPtr);
+}
+void FunExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
+//    if(mode == print_group_eq || mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
+//        output << "(";
+//    long letPos = output.tellp();
+//    long spaces = letPos - *pos;
+//    output << "_if ";
+//    this->test_part->pretty_print_at(output, print_group_none, pos);
+//    output << "\n";
+//    *pos = output.tellp();
+//    for(int i = 0; i < spaces; i++){
+//        output << " ";
+//    }
+//    output << "_then ";
+//    this->then_part->pretty_print_at(output, print_group_none, pos);
+//    output << "\n";
+//    *pos = output.tellp();
+//    for(int i = 0; i < spaces; i++){
+//        output << " ";
+//    }
+//    output << "_else ";
+//    this->else_part->pretty_print_at(output, print_group_none, pos);
+//    if(mode == print_group_eq || mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
+//        output << ")";
+}
+
+CallExpr::CallExpr(Expr *to_be_called, Expr *actual_arg){
+    this->to_be_called = to_be_called;
+    this->actual_arg = actual_arg;
+}
+
+bool CallExpr::equals(Expr *other){
+    CallExpr *c = dynamic_cast<CallExpr*>(other);
+    if(c == NULL)
+        return false;
+    else
+        return (this->to_be_called->equals(c->to_be_called) && this->actual_arg->equals(c->actual_arg));
+}
+
+Val* CallExpr::interp(){
+    return this->to_be_called->interp()->call(this->actual_arg->interp());
+}
+
+Expr* CallExpr::subst(std::string string, Expr* exp){
+    return new CallExpr(to_be_called->subst(string, exp), actual_arg->subst(string, exp));
+}
+
+void CallExpr::print(std::ostream& output){
+    this->to_be_called->print(output);
+      output << "(";
+      this->actual_arg->print(output);
+      output << ")";
+}
+
+void CallExpr::pretty_print(std::ostream& output){
+//    long pos = 0;
+//    long *positionPtr = &pos;
+//    output << "_if ";
+//    this->test_part->pretty_print_at(output, print_group_none, positionPtr);
+//    output << "\n";
+//    *positionPtr = output.tellp();
+//    output << "_then ";
+//    this->then_part->pretty_print_at(output, print_group_none, positionPtr);
+//    output << "\n";
+//    *positionPtr = output.tellp();
+//    output << "_else ";
+//    this->else_part->pretty_print_at(output, print_group_none, positionPtr);
+}
+void CallExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
+//    if(mode == print_group_eq || mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
+//        output << "(";
+//    long letPos = output.tellp();
+//    long spaces = letPos - *pos;
+//    output << "_if ";
+//    this->test_part->pretty_print_at(output, print_group_none, pos);
+//    output << "\n";
+//    *pos = output.tellp();
+//    for(int i = 0; i < spaces; i++){
+//        output << " ";
+//    }
+//    output << "_then ";
+//    this->then_part->pretty_print_at(output, print_group_none, pos);
+//    output << "\n";
+//    *pos = output.tellp();
+//    for(int i = 0; i < spaces; i++){
+//        output << " ";
+//    }
+//    output << "_else ";
+//    this->else_part->pretty_print_at(output, print_group_none, pos);
+//    if(mode == print_group_eq || mode == print_group_add_or_let || mode == print_group_add_or_mult_or_let)
+//        output << ")";
+}
+
 TEST_CASE("Expression Tests"){
-    std::ostream& os = std::cout;
     std::stringstream ss;
     NumExpr *num1 = new NumExpr(1);
     NumExpr *num2 = new NumExpr(2);
     NumExpr *num3 = new NumExpr(3);
     NumExpr *num4 = new NumExpr(4);
     VarExpr *myVar = new VarExpr("x");
-    VarExpr *myVar2 = new VarExpr("y");
     NumExpr *nullNum = NULL;
     nullNum = NULL;
     LetExpr *nullLet = NULL;
@@ -534,7 +641,6 @@ TEST_CASE("Expression Tests"){
 
     CHECK(let1->equals(let2) == true);
     CHECK(let1->equals(nullLet) == false);
-    CHECK(let1->has_variable() == true);
     CHECK(let2->interp()->equals(new NumVal(7)));
     CHECK(let2->subst("x", num3)->interp()->equals(new NumVal(7)));
 
@@ -547,14 +653,10 @@ TEST_CASE("Expression Tests"){
     CHECK((new AddExpr(num2, num1))->equals(new MultExpr(num1, num2)) == false);
     CHECK((myVar)->equals(new MultExpr(num1, num2)) == false);
     CHECK((num1)->interp()->equals(new NumVal(1)));
-    CHECK((new AddExpr(myVar, num1))->has_variable() == true);
-    CHECK((new AddExpr(num1, myVar))->has_variable() == true);
     CHECK((new AddExpr(num2, num1))->interp()->equals(new NumVal(3)));
     CHECK((new MultExpr(num2, num1))->interp()->equals(new NumVal(2)));
-    CHECK((new MultExpr(num1, myVar))->has_variable() == true);
-    CHECK((new MultExpr(num1, num2))->has_variable() == false);
-    myVar2->print(os);
-    std::cout << "=y\n";
+//    myVar2->print(os);
+//    std::cout << "=y\n";
     std::string testString = "(_let x=5 _in ((_let y=3 _in (y+2))+x))";
 
     CHECK ((new LetExpr("x", new NumExpr(5), new AddExpr(new VarExpr("x"), new NumExpr(1))))->to_string() == "(_let x=5 _in (x+1))");
@@ -572,6 +674,7 @@ TEST_CASE("Expression Tests"){
     CHECK((new NumExpr(0))->equals(new NumExpr(5)) == false);
     CHECK((new VarExpr("hi"))->equals(new VarExpr("hi")) == true);
     CHECK((new VarExpr("ew"))->equals(new VarExpr("hi")) == false);
+    CHECK((new CallExpr(new VarExpr("x"), new NumExpr(5)))->equals(NULL) == false);
     CHECK_THROWS_WITH((new VarExpr("x"))->interp(), "variable has no value");
     CHECK( (new AddExpr(new VarExpr("x"), new NumExpr(7)))->subst("x", new VarExpr("y"))->equals(new AddExpr(new VarExpr("y"), new NumExpr(7))) );
 
@@ -592,6 +695,8 @@ TEST_CASE("Expression Tests"){
     CHECK ((new MultExpr(new NumExpr(5), new NumExpr(4)))->to_string() == testString);
     testString = "((3*2)+(5*6))";
     CHECK ((new AddExpr( new MultExpr(new NumExpr(3), new NumExpr(2)), new MultExpr( new NumExpr(5), new NumExpr(6))))->to_string() == testString);
+    CHECK((new FunExpr("x", new NumExpr(5)))->to_string() == "(_fun (x) 5)");
+    CHECK((new CallExpr(new VarExpr("x"), new NumExpr(5)))->to_string() == "x(5)");
 
     testString = "5";
     CHECK ((new NumExpr(5))->pp_to_string() == "5");
@@ -673,7 +778,6 @@ TEST_CASE("Expression Tests"){
     BoolExpr nullBool = NULL;
 
     CHECK((new BoolExpr(new BoolVal(true)))->equals(new BoolExpr(new BoolVal(true))));
-    CHECK((new BoolExpr(new BoolVal(true)))->has_variable() == false);
     CHECK(nullBool.equals(nullLet) == false);
     CHECK((new BoolExpr(nullBool))->equals(new BoolExpr(new BoolVal(false))) == false);
 
@@ -687,7 +791,6 @@ TEST_CASE("Expression Tests"){
     CHECK((new IfExpr(new BoolExpr(true), new NumExpr(1), new NumExpr(2)))->interp()->equals(new NumVal(1)));
     CHECK((new EqExpr(new NumExpr(5), new NumExpr(5)))->equals(new EqExpr(new NumExpr(5), new NumExpr(5))));
     CHECK((new EqExpr(new NumExpr(5), new NumExpr(5)))->equals(nullNum) == false);
-    CHECK((new EqExpr(new NumExpr(5), new NumExpr(5)))->has_variable() == false);
 
     CHECK((new EqExpr(new NumExpr(5), new NumExpr(5)))->subst("y", new NumExpr(5))->equals(new EqExpr(new NumExpr(5), new NumExpr(5))));
 
@@ -696,8 +799,6 @@ TEST_CASE("Expression Tests"){
 
     CHECK((new IfExpr(new BoolExpr(false), new NumExpr(5), new NumExpr(2)))->to_string() == "(_if _false _then 5 _else 2)");
     CHECK((new IfExpr(new BoolExpr(false), new NumExpr(5), new NumExpr(2)))->equals(nullNum) == false);
-
-    CHECK((new IfExpr(new BoolExpr(false), new NumExpr(5), new NumExpr(2)))->has_variable() == false);
 
     CHECK((new IfExpr(new BoolExpr(false), new NumExpr(5), new NumExpr(2)))->subst("y", new NumExpr(5))->equals(new IfExpr(new BoolExpr(false), new NumExpr(5), new NumExpr(2))));
     
@@ -727,4 +828,8 @@ TEST_CASE("Expression Tests"){
     CHECK((new IfExpr(new IfExpr(new EqExpr(new NumExpr(3), new NumExpr(4)), new BoolExpr(false), new BoolExpr(true)), new NumExpr(5), new NumExpr(6)))->pp_to_string() == testString);
     
     CHECK((new EqExpr(new IfExpr(new BoolExpr(true), new NumExpr(2), new NumExpr(-2)), new IfExpr(new BoolExpr(true), new NumExpr(5), new NumExpr(-5))))->pp_to_string()== "(_if _true\n _then 2\n _else -2) == _if _true\n              _then 5\n              _else -5");
+    
+    
+    CHECK((new LetExpr("factrl", new FunExpr("factrl", new FunExpr("x", new IfExpr(new EqExpr(new VarExpr("x"), new NumExpr(1)), new NumExpr(1), new MultExpr(new VarExpr("x"), new CallExpr( new CallExpr( new VarExpr("factrl"), new VarExpr("factrl")),new AddExpr( new VarExpr("x"), new NumExpr(-1))))))), new CallExpr( new CallExpr( new VarExpr("factrl"), new VarExpr("factrl")), new NumExpr(10))))->interp()->equals(new NumVal(3628800)));
+
 };

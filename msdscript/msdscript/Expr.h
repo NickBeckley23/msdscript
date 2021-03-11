@@ -12,7 +12,6 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include "Val.h"
 
 
 typedef enum {
@@ -34,9 +33,6 @@ public:
     
     //returns the value of the Expression
     virtual Val* interp() = 0;
-    
-    //checks if there is a variable in the expression
-    virtual bool has_variable() = 0;
     
     //substitutes a given string for an expression
     virtual Expr* subst(std::string string, Expr *exp) = 0;
@@ -68,7 +64,6 @@ class NumExpr : public Expr{
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -85,7 +80,6 @@ class AddExpr : public Expr {
     bool equals(Expr *other);
     
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -101,7 +95,6 @@ class MultExpr : public Expr {
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -116,7 +109,6 @@ class VarExpr : public Expr {
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -133,7 +125,6 @@ class LetExpr : public Expr {
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr* exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -149,7 +140,6 @@ class BoolExpr : public Expr{
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -165,7 +155,6 @@ class EqExpr : public Expr {
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
@@ -182,11 +171,41 @@ class IfExpr : public Expr {
     
     bool equals(Expr *other);
     Val* interp();
-    bool has_variable();
     Expr* subst(std::string string, Expr *exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
     };
+
+class FunExpr : public Expr {
+public:
+    std::string formal_arg;
+    Expr *body;
+    
+    FunExpr(std::string formal_arg, Expr *body);
+    
+    bool equals(Expr *other);
+    Val* interp();
+    Expr* subst(std::string string, Expr *exp);
+    void print(std::ostream& output);
+    void pretty_print(std::ostream& output);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
+};
+
+class CallExpr : public Expr {
+public:
+    Expr *to_be_called;
+    Expr *actual_arg;
+    
+    CallExpr(Expr *to_be_called, Expr *actual_arg);
+    
+    bool equals(Expr *other);
+    Val* interp();
+    Expr* subst(std::string string, Expr *exp);
+    void print(std::ostream& output);
+    void pretty_print(std::ostream& output);
+    void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
+    
+};
 
 #endif /* Expr_hpp */

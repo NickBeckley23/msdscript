@@ -8,6 +8,7 @@
 #include "Parse.h"
 #include "Expr.h"
 #include "catch.h"
+#include "Val.h"
 
 void consume(std::istream &in, int expect){
     int c = in.get();
@@ -47,19 +48,6 @@ Expr* parse_var(std::istream &in){
         c = in.peek();
     }
     return new VarExpr(var);
-}
-
-Expr* parse_let(std::istream &in){
-    Expr *v = parse_var(in);
-    skip_whitespace(in);
-    consume(in, '=');
-    Expr *rhs = parse_expr(in);
-    skip_whitespace(in);
-    std::string kw = parse_keyword(in);
-    if(kw != "in")
-        throw std::runtime_error("invalid keyword parsed");
-    Expr *body = parse_expr(in);
-    return new LetExpr(v->pp_to_string(), rhs, body);
 }
 
 Expr* parse(std::istream &in){
@@ -136,7 +124,19 @@ Expr* parse_addend(std::istream &in){
     }
 }
 
-Expr* parse_multicand(std::istream &in){
+Expr* parse_multicand(std::istream &in) {
+    Expr *expr = parse_inner(in);
+    while (in.peek() == '(') {
+        consume(in, '(');
+        Expr *arg = parse_expr(in);
+        consume(in, ')');
+        skip_whitespace(in);
+        expr = new CallExpr(expr, arg);
+    }
+    return expr;
+}
+
+Expr* parse_inner(std::istream &in){
     skip_whitespace(in);
     int c = in.peek();
     if(( c == '-') || isdigit(c)){
@@ -163,9 +163,24 @@ Expr* parse_multicand(std::istream &in){
             return parse_true(in);
         else if(kw == "let")
             return parse_let(in);
+        else if(kw == "fun")
+            return parse_function(in);
     }
     consume(in, c);
     throw std::runtime_error("invalid input");
+}
+
+Expr* parse_let(std::istream &in){
+    Expr *v = parse_var(in);
+    skip_whitespace(in);
+    consume(in, '=');
+    Expr *rhs = parse_expr(in);
+    skip_whitespace(in);
+    std::string kw = parse_keyword(in);
+    if(kw != "in")
+        throw std::runtime_error("invalid keyword parsed");
+    Expr *body = parse_expr(in);
+    return new LetExpr(v->pp_to_string(), rhs, body);
 }
 
 Expr* parse_if(std::istream &in){
@@ -181,6 +196,16 @@ Expr* parse_if(std::istream &in){
     skip_whitespace(in);
     Expr *else_part = parse_expr(in);
     return new IfExpr(test, then, else_part);
+}
+
+Expr* parse_function(std::istream &in){
+    skip_whitespace(in);
+    consume(in, '(');
+    Expr *v = parse_expr(in);
+    consume(in, ')');
+    skip_whitespace(in);
+    Expr *body = parse_expr(in);
+    return new FunExpr(v->to_string(), body);
 }
 
 Expr* parse_false(std:: istream &in){
@@ -288,6 +313,11 @@ TEST_CASE("Parse Multicand"){
     testString = "(1*2)";
     CHECK(parse_str(testString)->equals(new MultExpr(new NumExpr(1), new NumExpr(2))) == true);
     
+}
+
+TEST_CASE("Parse Function"){
+    CHECK((parse_str("_let f = _fun (x) x+1 _in f(5)")->equals(new LetExpr("f", new FunExpr("x", new AddExpr(new VarExpr("x"), new NumExpr(1))), new CallExpr(new VarExpr("f"), new NumExpr(5))))));
+    CHECK((parse_str("_let f = _fun (x) _true _in f(5)")->equals(new LetExpr("f", new FunExpr("x", new BoolExpr(true)), new CallExpr(new VarExpr("f"), new NumExpr(5))))));
 }
 
 

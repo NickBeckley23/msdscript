@@ -21,7 +21,8 @@ public:
     virtual Val* mult_to(Val* rhs) = 0;
     virtual void print(std::ostream& output) = 0;
     virtual bool is_true() = 0;
-    
+    virtual Val* call(Val* actual_arg) = 0;
+    std::string to_string();
 };
 
 class NumVal : public Val {
@@ -36,6 +37,7 @@ public:
     Val* mult_to(Val* rhs);
     void print(std::ostream& output);
     bool is_true();
+    Val* call(Val* actual_arg);
     
 };
 
@@ -51,6 +53,24 @@ public:
     Val* mult_to(Val* rhs);
     void print(std::ostream& output);
     bool is_true();
+    Val* call(Val* actual_arg);
     
 };
+
+class FunVal : public Val {
+public:
+    std::string formal_arg;
+    Expr *body;
+    
+    FunVal(std::string formal_arg, Expr* body);
+    
+    Expr* to_expr();
+    bool equals(Val* v);
+    Val* add_to(Val* rhs);
+    Val* mult_to(Val* rhs);
+    void print(std::ostream& output);
+    bool is_true();
+    Val* call(Val* actual_arg);
+};
+
 #endif /* Val_hpp */
