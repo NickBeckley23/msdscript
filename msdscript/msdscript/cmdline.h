@@ -5,12 +5,16 @@
 //  Created by Nick Beckley on 1/19/21.
 //
 
-#ifndef cmdline_hpp
-#define cmdline_hpp
+#ifndef cmdline_h
+#define cmdline_h
 
 #include <stdio.h>
 #include <string>
 #include "catch.h"
+#include "pointer.h"
+#include "Expr.h"
+#include "Parse.h"
+#include "Val.h"
 
 void use_arguments(int argc, char * argv[]);
 

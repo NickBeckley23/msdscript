@@ -1,4 +1,4 @@
-INCS = cmdline.h catch.h Expr.h Parse.h Val.h
+INCS = cmdline.h catch.h Expr.h Parse.h Val.h pointer.h
 
 INCS2 = ../test_msdscript/test_msdscript/exec.hpp
 
@@ -7,7 +7,7 @@ OBJS = main.o cmdline.o Expr.o Parse.o Val.o
 OBJS2 = ../test_msdscript/test_msdscript/main.o ../test_msdscript/test_msdscript/exec.o
 
 CXX = c++
-CXXFLAGS = --std=c++14 -O2
+CXXFLAGS = --std=c++14 -Wall -O2
 
 msdscript: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o msdscript $(OBJS)
@@ -34,8 +34,8 @@ cmdline.o: cmdline.cpp $(INCS)
 Expr.o: Expr.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c Expr.cpp
 
-parse.o: Parse.cpp $(INCS)
+Parse.o: Parse.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c Parse.cpp
 
-val.o: Val.cpp $(INCS)
+Val.o: Val.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c Val.cpp

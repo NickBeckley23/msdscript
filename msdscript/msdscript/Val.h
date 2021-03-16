@@ -5,23 +5,25 @@
 //  Created by Nick Beckley on 2/23/21.
 //
 
-#ifndef Val_hpp
-#define Val_hpp
+#ifndef Val_h
+#define Val_h
 
 #include <stdio.h>
 #include <iostream>
+#include "pointer.h"
 
 class Expr;
 
-class Val{
+CLASS(Val) {
 public:
-    virtual Expr* to_expr() = 0;
-    virtual bool equals(Val* v) = 0;
-    virtual Val* add_to(Val* rhs) = 0;
-    virtual Val* mult_to(Val* rhs) = 0;
+    virtual ~Val() {};
+    virtual PTR(Expr) to_expr() = 0;
+    virtual bool equals(PTR(Val) v) = 0;
+    virtual PTR(Val) add_to(PTR(Val) rhs) = 0;
+    virtual PTR(Val) mult_to(PTR(Val) rhs) = 0;
     virtual void print(std::ostream& output) = 0;
     virtual bool is_true() = 0;
-    virtual Val* call(Val* actual_arg) = 0;
+    virtual PTR(Val) call(PTR(Val) actual_arg) = 0;
     std::string to_string();
 };
 
@@ -31,13 +33,13 @@ public:
     
     NumVal(int val);
     
-    Expr* to_expr();
-    bool equals(Val* v);
-    Val* add_to(Val* rhs);
-    Val* mult_to(Val* rhs);
+    PTR(Expr) to_expr();
+    bool equals(PTR(Val) v);
+    PTR(Val) add_to(PTR(Val) rhs);
+    PTR(Val) mult_to(PTR(Val) rhs);
     void print(std::ostream& output);
     bool is_true();
-    Val* call(Val* actual_arg);
+    PTR(Val) call(PTR(Val) actual_arg);
     
 };
 
@@ -47,30 +49,30 @@ public:
     
     BoolVal(bool boolVal);
     
-    Expr* to_expr();
-    bool equals(Val* v);
-    Val* add_to(Val* rhs);
-    Val* mult_to(Val* rhs);
+    PTR(Expr) to_expr();
+    bool equals(PTR(Val) v);
+    PTR(Val) add_to(PTR(Val) rhs);
+    PTR(Val) mult_to(PTR(Val) rhs);
     void print(std::ostream& output);
     bool is_true();
-    Val* call(Val* actual_arg);
+    PTR(Val) call(PTR(Val) actual_arg);
     
 };
 
 class FunVal : public Val {
 public:
     std::string formal_arg;
-    Expr *body;
+    PTR(Expr)body;
     
-    FunVal(std::string formal_arg, Expr* body);
+    FunVal(std::string formal_arg, PTR(Expr) body);
     
-    Expr* to_expr();
-    bool equals(Val* v);
-    Val* add_to(Val* rhs);
-    Val* mult_to(Val* rhs);
+    PTR(Expr) to_expr();
+    bool equals(PTR(Val) v);
+    PTR(Val) add_to(PTR(Val) rhs);
+    PTR(Val) mult_to(PTR(Val) rhs);
     void print(std::ostream& output);
     bool is_true();
-    Val* call(Val* actual_arg);
+    PTR(Val) call(PTR(Val) actual_arg);
 };
 
 #endif /* Val_hpp */

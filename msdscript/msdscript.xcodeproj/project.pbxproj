@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0110021126011B1B00125C5B /* pointer.h in Sources */ = {isa = PBXBuildFile; fileRef = 0110021026011B1B00125C5B /* pointer.h */; };
 		01117E1D25E59FE00081CA1A /* Val.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01117E1B25E59FE00081CA1A /* Val.cpp */; };
 		01117E2025E5A13C0081CA1A /* Val.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01117E1B25E59FE00081CA1A /* Val.cpp */; };
 		012E73DD25C9C15200E3FB20 /* test.m in Sources */ = {isa = PBXBuildFile; fileRef = 012E73DC25C9C15200E3FB20 /* test.m */; };
@@ -32,6 +33,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0110021026011B1B00125C5B /* pointer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pointer.h; sourceTree = "<group>"; };
 		01117E1B25E59FE00081CA1A /* Val.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Val.cpp; sourceTree = "<group>"; };
 		01117E1C25E59FE00081CA1A /* Val.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Val.h; sourceTree = "<group>"; };
 		012E73DA25C9C15200E3FB20 /* MSDTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MSDTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,6 +112,7 @@
 				017D524325DC39880068A996 /* Parse.h */,
 				01117E1B25E59FE00081CA1A /* Val.cpp */,
 				01117E1C25E59FE00081CA1A /* Val.h */,
+				0110021026011B1B00125C5B /* pointer.h */,
 			);
 			path = msdscript;
 			sourceTree = "<group>";
@@ -218,6 +221,7 @@
 				01FDEA3825B74B9500D22B11 /* cmdline.cpp in Sources */,
 				01FDEA2F25B74B1300D22B11 /* main.cpp in Sources */,
 				01117E1D25E59FE00081CA1A /* Val.cpp in Sources */,
+				0110021126011B1B00125C5B /* pointer.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

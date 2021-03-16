@@ -38,7 +38,7 @@ std::string parse_keyword(std::istream &in){
     return word;
 }
 
-Expr* parse_var(std::istream &in){
+PTR(Expr) parse_var(std::istream &in){
     skip_whitespace(in);
     std::string var = "";
     int c = in.peek();
@@ -47,21 +47,21 @@ Expr* parse_var(std::istream &in){
         var += c;
         c = in.peek();
     }
-    return new VarExpr(var);
+    return NEW(VarExpr)(var);
 }
 
-Expr* parse(std::istream &in){
-    Expr *e = parse_expr(in);
+PTR(Expr) parse(std::istream &in){
+    PTR(Expr)e = parse_expr(in);
     return e;
 }
 
-Expr* parse_str(std::string s){
+PTR(Expr) parse_str(std::string s){
     std::istringstream stream1(s);
-    Expr *e = parse_expr(stream1);
+    PTR(Expr)e = parse_expr(stream1);
     return e;
 }
 
-Expr* parse_num(std::istream &in){
+PTR(Expr) parse_num(std::istream &in){
     int n = 0;
     bool negative = false;
     
@@ -79,11 +79,11 @@ Expr* parse_num(std::istream &in){
     }
     if(negative)
         n = -n;
-    return new NumExpr(n);
+    return NEW(NumExpr)(n);
 }
 
-Expr* parse_expr(std::istream &in){
-    Expr *e = parse_comparg(in);
+PTR(Expr) parse_expr(std::istream &in){
+    PTR(Expr)e = parse_comparg(in);
     
     skip_whitespace(in);
     
@@ -91,52 +91,52 @@ Expr* parse_expr(std::istream &in){
     if(c == '=') {
         consume(in, '=');
         consume(in, '=');
-        Expr *rhs = parse_expr(in);
-        return new EqExpr(e, rhs);
+        PTR(Expr)rhs = parse_expr(in);
+        return NEW(EqExpr)(e, rhs);
     }else{
         return e;
     }
 }
 
-Expr* parse_comparg(std::istream &in){
-    Expr *exp = parse_addend(in);
+PTR(Expr) parse_comparg(std::istream &in){
+    PTR(Expr)exp = parse_addend(in);
     skip_whitespace(in);
     int c = in.peek();
     if(c == '+'){
         consume(in, '+');
-        Expr* o = parse_comparg(in);
-        return new AddExpr(exp, o);
+        PTR(Expr) o = parse_comparg(in);
+        return NEW(AddExpr)(exp, o);
     }else{
         return exp;
     }
 }
 
-Expr* parse_addend(std::istream &in){
-    Expr *e = parse_multicand(in);
+PTR(Expr) parse_addend(std::istream &in){
+    PTR(Expr)e = parse_multicand(in);
     skip_whitespace(in);
     int c = in.peek();
     if(c == '*') {
         consume(in, '*');
-        Expr *rhs = parse_addend(in);
-        return new MultExpr(e, rhs);
+        PTR(Expr)rhs = parse_addend(in);
+        return NEW(MultExpr)(e, rhs);
     }else{
         return e;
     }
 }
 
-Expr* parse_multicand(std::istream &in) {
-    Expr *expr = parse_inner(in);
+PTR(Expr) parse_multicand(std::istream &in) {
+    PTR(Expr)expr = parse_inner(in);
     while (in.peek() == '(') {
         consume(in, '(');
-        Expr *arg = parse_expr(in);
+        PTR(Expr)arg = parse_expr(in);
         consume(in, ')');
         skip_whitespace(in);
-        expr = new CallExpr(expr, arg);
+        expr = NEW(CallExpr)(expr, arg);
     }
     return expr;
 }
 
-Expr* parse_inner(std::istream &in){
+PTR(Expr) parse_inner(std::istream &in){
     skip_whitespace(in);
     int c = in.peek();
     if(( c == '-') || isdigit(c)){
@@ -144,7 +144,7 @@ Expr* parse_inner(std::istream &in){
     }
     else if(c == '('){
         consume(in, '(');
-        Expr *e = parse_expr(in);
+        PTR(Expr)e = parse_expr(in);
         skip_whitespace(in);
         c = in.get();
         if(c != ')')
@@ -170,50 +170,50 @@ Expr* parse_inner(std::istream &in){
     throw std::runtime_error("invalid input");
 }
 
-Expr* parse_let(std::istream &in){
-    Expr *v = parse_var(in);
+PTR(Expr) parse_let(std::istream &in){
+    PTR(Expr)v = parse_var(in);
     skip_whitespace(in);
     consume(in, '=');
-    Expr *rhs = parse_expr(in);
+    PTR(Expr)rhs = parse_expr(in);
     skip_whitespace(in);
     std::string kw = parse_keyword(in);
     if(kw != "in")
         throw std::runtime_error("invalid keyword parsed");
-    Expr *body = parse_expr(in);
-    return new LetExpr(v->pp_to_string(), rhs, body);
+    PTR(Expr)body = parse_expr(in);
+    return NEW(LetExpr)(v->pp_to_string(), rhs, body);
 }
 
-Expr* parse_if(std::istream &in){
-    Expr* test = parse_expr(in);
+PTR(Expr) parse_if(std::istream &in){
+    PTR(Expr) test = parse_expr(in);
     skip_whitespace(in);
     if(parse_keyword(in) != "then")
         throw std::runtime_error("invalid then keyword");
     skip_whitespace(in);
-    Expr *then = parse_expr(in);
+    PTR(Expr)then = parse_expr(in);
     skip_whitespace(in);
     if(parse_keyword(in) != "else")
         throw std::runtime_error("invalid else keyword");
     skip_whitespace(in);
-    Expr *else_part = parse_expr(in);
-    return new IfExpr(test, then, else_part);
+    PTR(Expr)else_part = parse_expr(in);
+    return NEW(IfExpr)(test, then, else_part);
 }
 
-Expr* parse_function(std::istream &in){
+PTR(Expr) parse_function(std::istream &in){
     skip_whitespace(in);
     consume(in, '(');
-    Expr *v = parse_expr(in);
+    PTR(Expr)v = parse_expr(in);
     consume(in, ')');
     skip_whitespace(in);
-    Expr *body = parse_expr(in);
-    return new FunExpr(v->to_string(), body);
+    PTR(Expr)body = parse_expr(in);
+    return NEW(FunExpr)(v->to_string(), body);
 }
 
-Expr* parse_false(std:: istream &in){
-    return new BoolExpr(false);
+PTR(Expr) parse_false(std:: istream &in){
+    return NEW(BoolExpr)(false);
 }
 
-Expr* parse_true(std::istream &in){
-    return new BoolExpr(true);
+PTR(Expr) parse_true(std::istream &in){
+    return NEW(BoolExpr)(true);
 }
 
 TEST_CASE ("Skip_Whitespace") {
@@ -248,84 +248,84 @@ TEST_CASE ("Parse Keyword") {
 
 TEST_CASE ("Parse") {
     std::stringstream in("_true");
-    CHECK(parse(in)->equals(new BoolExpr(true)));
+    CHECK(parse(in)->equals(NEW(BoolExpr)(true)));
 }
 
 TEST_CASE ("Parse Num") {
-    Expr *n = parse_str("100");
-    CHECK( n->equals(new NumExpr(100)));
+    PTR(Expr)n = parse_str("100");
+    CHECK( n->equals(NEW(NumExpr)(100)));
 }
 
 TEST_CASE ("Parse True") {
-    Expr *t = parse_str("_true");
-    Expr *f = parse_str("_false");
-    CHECK( t->equals(new BoolExpr(true)));
-    CHECK( f->equals(new BoolExpr(false)));
+    PTR(Expr)t = parse_str("_true");
+    PTR(Expr)f = parse_str("_false");
+    CHECK( t->equals(NEW(BoolExpr)(true)));
+    CHECK( f->equals(NEW(BoolExpr)(false)));
 }
 
 TEST_CASE ("Parse False") {
-    Expr *t = parse_str("_true");
-    Expr *f = parse_str("_false");
-    CHECK( t->equals(new BoolExpr(true)));
-    CHECK( f->equals(new BoolExpr(false)));
+    PTR(Expr)t = parse_str("_true");
+    PTR(Expr)f = parse_str("_false");
+    CHECK( t->equals(NEW(BoolExpr)(true)));
+    CHECK( f->equals(NEW(BoolExpr)(false)));
 }
 
 TEST_CASE ("Parse Var") {
-    Expr *var = parse_str("hello");
-    CHECK( var->equals(new VarExpr("hello")));
-    Expr *v = parse_str("y");
-    CHECK(v->equals(new VarExpr("y")));
+    PTR(Expr)var = parse_str("hello");
+    CHECK( var->equals(NEW(VarExpr)("hello")));
+    PTR(Expr)v = parse_str("y");
+    CHECK(v->equals(NEW(VarExpr)("y")));
     v = parse_str("nick");
-    CHECK(v->equals(new VarExpr("nick")));
+    CHECK(v->equals(NEW(VarExpr)("nick")));
 }
 
 TEST_CASE("Parse Let"){
     std::string testString = "_let x = 5\n_in  x + 1";
-    Expr *e = parse_str(testString);
-    CHECK ((new LetExpr("x", new NumExpr(5), new AddExpr(new VarExpr("x"), new NumExpr(1))))
+    PTR(Expr)e = parse_str(testString);
+    CHECK ((NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1))))
            ->equals(e));
-    LetExpr *let1 = new LetExpr("x", new NumExpr(5), (new AddExpr (new VarExpr("x"), new NumExpr (4))));
-    e = new LetExpr("x", new NumExpr(5), (new AddExpr (new VarExpr("x"), new NumExpr(4))));
+    PTR(LetExpr)let1 = NEW(LetExpr)("x", NEW(NumExpr)(5), (NEW(AddExpr) (NEW(VarExpr)("x"), NEW(NumExpr) (4))));
+    e = NEW(LetExpr)("x", NEW(NumExpr)(5), (NEW(AddExpr) (NEW(VarExpr)("x"), NEW(NumExpr)(4))));
     CHECK((let1->equals(e))==true);
-    CHECK((let1->equals(new MultExpr(new NumExpr(0),new NumExpr(1))))==false);
+    CHECK((let1->equals(NEW(MultExpr)(NEW(NumExpr)(0),NEW(NumExpr)(1))))==false);
     testString = "(_let x=2 _in x+1)";
-    CHECK(parse_str(testString)->equals(new LetExpr("x", new NumExpr(2), new AddExpr(new VarExpr("x"), new NumExpr(1)))));
+    CHECK(parse_str(testString)->equals(NEW(LetExpr)("x", NEW(NumExpr)(2), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)))));
     testString = "(_let x=2 _i x+1)";
     CHECK_THROWS_WITH(parse_str(testString), "invalid keyword parsed");
 }
 
 TEST_CASE("Parse If"){
     std::string testString = "_if 4 + 1\n_then 2\n_else 3";
-    CHECK((new IfExpr(new AddExpr(new NumExpr(4), new NumExpr(1)), new NumExpr(2), new NumExpr(3)))->pp_to_string() == testString);
+    CHECK((NEW(IfExpr)(NEW(AddExpr)(NEW(NumExpr)(4), NEW(NumExpr)(1)), NEW(NumExpr)(2), NEW(NumExpr)(3)))->pp_to_string() == testString);
     testString = "_if 1==1 _then 1 _else 2";
-    CHECK(parse_str(testString)->equals(new IfExpr(new EqExpr(new NumExpr(1), new NumExpr(1)), new NumExpr(1), new NumExpr(2))) == true);
+    CHECK(parse_str(testString)->equals(NEW(IfExpr)(NEW(EqExpr)(NEW(NumExpr)(1), NEW(NumExpr)(1)), NEW(NumExpr)(1), NEW(NumExpr)(2))) == true);
     testString = "X";
-    CHECK(parse_str(testString)->equals(new VarExpr("X")) == true);
+    CHECK(parse_str(testString)->equals(NEW(VarExpr)("X")) == true);
     testString = "_if 1==1 _the 1 _else 2";
-    CHECK_THROWS_WITH((parse_str(testString)->equals(new IfExpr(new EqExpr(new NumExpr(1), new NumExpr(1)), new NumExpr(1), new NumExpr(2)))), "invalid then keyword");
+    CHECK_THROWS_WITH((parse_str(testString)->equals(NEW(IfExpr)(NEW(EqExpr)(NEW(NumExpr)(1), NEW(NumExpr)(1)), NEW(NumExpr)(1), NEW(NumExpr)(2)))), "invalid then keyword");
     testString = "_if 1==1 _then 1 _els 2";
-    CHECK_THROWS_WITH((parse_str(testString)->equals(new IfExpr(new EqExpr(new NumExpr(1), new NumExpr(1)), new NumExpr(1), new NumExpr(2)))), "invalid else keyword");
+    CHECK_THROWS_WITH((parse_str(testString)->equals(NEW(IfExpr)(NEW(EqExpr)(NEW(NumExpr)(1), NEW(NumExpr)(1)), NEW(NumExpr)(1), NEW(NumExpr)(2)))), "invalid else keyword");
 }
 
 TEST_CASE("Parse Multicand"){
     std::string testString = "1 * 2";
-    CHECK(parse_str(testString)->equals(new MultExpr(new NumExpr(1), new NumExpr(2))) == true);
+    CHECK(parse_str(testString)->equals(NEW(MultExpr)(NEW(NumExpr)(1), NEW(NumExpr)(2))) == true);
     testString = "(1*2)";
-    CHECK(parse_str(testString)->equals(new MultExpr(new NumExpr(1), new NumExpr(2))) == true);
+    CHECK(parse_str(testString)->equals(NEW(MultExpr)(NEW(NumExpr)(1), NEW(NumExpr)(2))) == true);
     
 }
 
 TEST_CASE("Parse Function"){
-    CHECK((parse_str("_let f = _fun (x) x+1 _in f(5)")->equals(new LetExpr("f", new FunExpr("x", new AddExpr(new VarExpr("x"), new NumExpr(1))), new CallExpr(new VarExpr("f"), new NumExpr(5))))));
-    CHECK((parse_str("_let f = _fun (x) _true _in f(5)")->equals(new LetExpr("f", new FunExpr("x", new BoolExpr(true)), new CallExpr(new VarExpr("f"), new NumExpr(5))))));
+    CHECK((parse_str("_let f = _fun (x) x+1 _in f(5)")->equals(NEW(LetExpr)("f", NEW(FunExpr)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1))), NEW(CallExpr)(NEW(VarExpr)("f"), NEW(NumExpr)(5))))));
+    CHECK((parse_str("_let f = _fun (x) _true _in f(5)")->equals(NEW(LetExpr)("f", NEW(FunExpr)("x", NEW(BoolExpr)(true)), NEW(CallExpr)(NEW(VarExpr)("f"), NEW(NumExpr)(5))))));
 }
 
 
 TEST_CASE("PARSE"){
     std::stringstream ss;
     ss.str("_notlet");
-    CHECK((parse_str("1")->equals(new NumExpr(1))));
-    CHECK((parse_str("-1")->equals(new NumExpr(-1))));
+    CHECK((parse_str("1")->equals(NEW(NumExpr)(1))));
+    CHECK((parse_str("-1")->equals(NEW(NumExpr)(-1))));
     CHECK_THROWS_WITH((parse_str("(1*1")->interp()), "missing closing parenthesis");
     CHECK_THROWS_WITH((parse_str("^1*1")->interp()), "invalid input");
     ss.str("hello");
