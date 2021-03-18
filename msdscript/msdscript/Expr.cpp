@@ -831,5 +831,14 @@ TEST_CASE("Expression Tests"){
     
     
     CHECK((NEW(LetExpr)("factrl", NEW(FunExpr)("factrl", NEW(FunExpr)("x", NEW(IfExpr)(NEW(EqExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)), NEW(NumExpr)(1), NEW(MultExpr)(NEW(VarExpr)("x"), NEW(CallExpr)( NEW(CallExpr)( NEW(VarExpr)("factrl"), NEW(VarExpr)("factrl")),NEW(AddExpr)( NEW(VarExpr)("x"), NEW(NumExpr)(-1))))))), NEW(CallExpr)( NEW(CallExpr)( NEW(VarExpr)("factrl"), NEW(VarExpr)("factrl")), NEW(NumExpr)(10))))->interp()->equals(NEW(NumVal)(3628800)));
+    
+    CHECK((NEW(FunExpr)("x", NEW(NumExpr)(2)))->subst("x", NEW(NumExpr)(1))->equals(NEW(FunExpr)("x", NEW(NumExpr)(2))) == true);
+    CHECK((NEW(FunExpr)("x", NEW(NumExpr)(2)))->subst("y", NEW(NumExpr)(1))->equals(NEW(FunExpr)("y", NEW(NumExpr)(1))) == false);
+    CHECK((NEW(FunExpr)("x", NEW(VarExpr)("x")))->subst("x", NEW(NumExpr)(0))->equals(NEW(FunExpr)("x", NEW(VarExpr)("x"))) == true);
+    CHECK((NEW(FunExpr)("x", NEW(MultExpr)(NEW(NumExpr)(1), NEW(VarExpr)("y"))))->subst("y", NEW(NumExpr)(0))->equals(NEW(FunExpr)("x", NEW(MultExpr)(NEW(NumExpr)(1), NEW(NumExpr)(0)))) == true);
+    
+    CHECK((NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(NumExpr)(1), NEW(VarExpr)("y"))), NEW(NumExpr)(4)))->subst("y", NEW(NumExpr)(2))->equals(NEW(CallExpr)(NEW(FunExpr)("x", NEW(AddExpr)(NEW(NumExpr)(1), NEW(NumExpr)(2))), NEW(NumExpr)(4))) == false);
+    CHECK((NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1))), NEW(NumExpr)(3)))->subst("x", NEW(NumExpr)(5))->equals(NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1))), NEW(NumExpr)(3))) == true);
+    CHECK((NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(NumExpr)(1), NEW(VarExpr)("y"))), NEW(NumExpr)(4)))->subst("y", NEW(NumExpr)(2))->equals(NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(NumExpr)(1), NEW(NumExpr)(2))), NEW(NumExpr)(4))) == true);
 
 };

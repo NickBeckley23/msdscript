@@ -151,6 +151,8 @@ TEST_CASE("ValClass"){
     CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5)))->add_to(NULL), "addition of non-number");
     CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5)))->mult_to(NULL), "multiplication of non-number");
     CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5)))->is_true(), "Test expression is not a boolean");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(MultExpr)(NEW(VarExpr)("y"), NEW(VarExpr)("x"))))->call(NEW(NumVal)(3)), "variable has no value");
+    
     CHECK((NEW(BoolVal)(true))->to_string() == "_true");
     CHECK((NEW(BoolVal)(false))->to_string() == "_false");
     CHECK((NEW(BoolVal)(true))->is_true());
@@ -175,5 +177,8 @@ TEST_CASE("ValClass"){
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->equals(NULL)==false);
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->to_string() == "(_fun (x) 5)");
     
+    CHECK((NEW(FunVal)("x", NEW(MultExpr)(NEW(NumExpr)(2), NEW(VarExpr)("x"))))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(6))==true);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(5))==true);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(3))==false);
     
 }
