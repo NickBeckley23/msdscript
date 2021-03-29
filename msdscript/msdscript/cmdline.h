@@ -15,6 +15,7 @@
 #include "Expr.h"
 #include "Parse.h"
 #include "Val.h"
+#include "Env.h"
 
 void use_arguments(int argc, char * argv[]);
 

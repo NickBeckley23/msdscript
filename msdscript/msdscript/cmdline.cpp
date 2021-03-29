@@ -29,7 +29,7 @@ void use_arguments(int argc,char * argv[]){
             exit(1);
         }else if(arg == "--interp"){
             PTR(Expr)e = parse_expr(std::cin);
-            PTR(Val)out = e->interp();
+            PTR(Val)out = e->interp(Env::empty);
             out->print(std::cout);
             std::cout << "\n";
         }else if(arg == "--print"){

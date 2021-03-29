@@ -21,9 +21,9 @@ NumVal::NumVal(int num){
     this->val = num;
 }
 
-PTR(Expr) NumVal::to_expr(){
-    return NEW(NumExpr)(this->val);
-}
+//PTR(Expr) NumVal::to_expr(){
+//    return NEW(NumExpr)(this->val);
+//}
 
 bool NumVal::equals(PTR(Val) other){
     PTR(NumVal) num = CAST(NumVal)(other);
@@ -63,9 +63,9 @@ BoolVal::BoolVal(bool boolVal){
     this->boolVal = boolVal;
 }
 
-PTR(Expr) BoolVal::to_expr(){
-    return NEW(BoolExpr)(this->boolVal);
-}
+//PTR(Expr) BoolVal::to_expr(){
+//    return NEW(BoolExpr)(this->boolVal);
+//}
 
 bool BoolVal::equals(PTR(Val) other){
     PTR(BoolVal) b = CAST(BoolVal)(other);
@@ -98,14 +98,15 @@ PTR(Val) BoolVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("calling not allowed on boolval");
 }
 
-FunVal::FunVal(std::string formal_arg, PTR(Expr) body){
+FunVal::FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env){
     this->formal_arg = formal_arg;
     this->body = body;
+    this->env = env;
 }
 
-PTR(Expr) FunVal::to_expr(){
-    return NEW(FunExpr)(this->formal_arg, this->body);
-}
+//PTR(Expr) FunVal::to_expr(){
+//    return NEW(FunExpr)(this->formal_arg, this->body);
+//}
 
 bool FunVal::equals(PTR(Val) other){
     PTR(FunVal) f = CAST(FunVal)(other);
@@ -136,7 +137,7 @@ bool FunVal::is_true(){
 }
 
 PTR(Val) FunVal::call(PTR(Val) actual_arg){
-    return body->subst(formal_arg, actual_arg->to_expr())->interp();
+    return body->interp(NEW(ExtendedEnv)(formal_arg, actual_arg, env));
 }
 
 TEST_CASE("ValClass"){
@@ -148,37 +149,37 @@ TEST_CASE("ValClass"){
     CHECK_THROWS_WITH((NEW(NumVal)(5))->add_to(NULL), "add of non-number");
     CHECK_THROWS_WITH((NEW(NumVal)(5))->mult_to(NULL), "mult of non-number");
     CHECK_THROWS_WITH((NEW(NumVal)(5))->is_true(), "Test expression is not a boolean");
-    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5)))->add_to(NULL), "addition of non-number");
-    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5)))->mult_to(NULL), "multiplication of non-number");
-    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5)))->is_true(), "Test expression is not a boolean");
-    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(MultExpr)(NEW(VarExpr)("y"), NEW(VarExpr)("x"))))->call(NEW(NumVal)(3)), "variable has no value");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5), Env::empty))->add_to(NULL), "addition of non-number");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5), Env::empty))->mult_to(NULL), "multiplication of non-number");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->is_true(), "Test expression is not a boolean");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(MultExpr)(NEW(VarExpr)("y"), NEW(VarExpr)("x")),Env::empty))->call(NEW(NumVal)(3)), "free variable: y");
     
     CHECK((NEW(BoolVal)(true))->to_string() == "_true");
     CHECK((NEW(BoolVal)(false))->to_string() == "_false");
     CHECK((NEW(BoolVal)(true))->is_true());
-    CHECK((NEW(BoolVal)(true))->to_expr()->equals(NEW(BoolExpr)(true)));
+//    CHECK((NEW(BoolVal)(true))->to_expr()->equals(NEW(BoolExpr)(true)));
     CHECK((NEW(BoolVal)(true))->equals(NULL)==false);
-    testString = "5";
-    CHECK(((NEW(NumVal)(5))->to_expr()->to_string() == "5"));
-    CHECK(((NEW(BoolVal)(true))->to_expr()->pp_to_string() == "_true"));
+//    testString = "5";
+//    CHECK(((NEW(NumVal)(5))->to_expr()->to_string() == "5"));
+//    CHECK(((NEW(BoolVal)(true))->to_expr()->pp_to_string() == "_true"));
     
     CHECK_THROWS_WITH((NEW(BoolVal)(true))->add_to(NEW(NumVal)(5)), "addition of non-number");
     CHECK_THROWS_WITH((NEW(BoolVal)(true))->mult_to(NEW(NumVal)(5)), "multiplication of non-number");
     CHECK_THROWS_WITH((NEW(BoolVal)(true))->call(NEW(NumVal)(5)), "calling not allowed on boolval");
     
-    CHECK((NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(8))), NEW(NumExpr)(5)))->interp()->equals(NEW(NumVal)(40)));
+    CHECK((NEW(CallExpr)(NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(8))), NEW(NumExpr)(5)))->interp(Env::empty)->equals(NEW(NumVal)(40)));
     
     PTR(FunExpr)funExp = NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(8)));
     
     CHECK((NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(8))))->equals(funExp) == true);
     CHECK((NEW(FunExpr)("x", NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(8))))->equals(NULL) == false);
     
-    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->equals(NEW(FunVal)("x", NEW(NumExpr)(5)))==true);
-    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->equals(NULL)==false);
-    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->to_string() == "(_fun (x) 5)");
-    
-    CHECK((NEW(FunVal)("x", NEW(MultExpr)(NEW(NumExpr)(2), NEW(VarExpr)("x"))))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(6))==true);
-    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(5))==true);
-    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5)))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(3))==false);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->equals(NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))==true);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->equals(NULL)==false);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->to_string() == "(_fun (x) 5)");
+//    
+    CHECK((NEW(FunVal)("x", NEW(MultExpr)(NEW(NumExpr)(2), NEW(VarExpr)("x")),Env::empty))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(6))==true);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(5))==true);
+    CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(3))==false);
     
 }

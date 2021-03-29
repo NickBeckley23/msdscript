@@ -13,6 +13,7 @@
 		012E73DD25C9C15200E3FB20 /* test.m in Sources */ = {isa = PBXBuildFile; fileRef = 012E73DC25C9C15200E3FB20 /* test.m */; };
 		012E73E425C9C2B300E3FB20 /* Expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01FDEA7025BE40F000D22B11 /* Expr.cpp */; };
 		012E73EE25C9C75D00E3FB20 /* run.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 012E73ED25C9C75D00E3FB20 /* run.cpp */; };
+		013631E72612749500F7B2B4 /* Env.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 013631E52612749500F7B2B4 /* Env.cpp */; };
 		017D524425DC39880068A996 /* Parse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 017D524225DC39880068A996 /* Parse.cpp */; };
 		017D524725DC39930068A996 /* Parse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 017D524225DC39880068A996 /* Parse.cpp */; };
 		01FDEA2F25B74B1300D22B11 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01FDEA2E25B74B1300D22B11 /* main.cpp */; };
@@ -41,6 +42,8 @@
 		012E73DE25C9C15200E3FB20 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		012E73EC25C9C73200E3FB20 /* run.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = run.h; sourceTree = "<group>"; };
 		012E73ED25C9C75D00E3FB20 /* run.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = run.cpp; sourceTree = "<group>"; };
+		013631E52612749500F7B2B4 /* Env.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Env.cpp; sourceTree = "<group>"; };
+		013631E62612749500F7B2B4 /* Env.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Env.h; sourceTree = "<group>"; };
 		017D524225DC39880068A996 /* Parse.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Parse.cpp; sourceTree = "<group>"; };
 		017D524325DC39880068A996 /* Parse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parse.h; sourceTree = "<group>"; };
 		01FDEA2B25B74B1300D22B11 /* msdscript */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = msdscript; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,6 +116,8 @@
 				01117E1B25E59FE00081CA1A /* Val.cpp */,
 				01117E1C25E59FE00081CA1A /* Val.h */,
 				0110021026011B1B00125C5B /* pointer.h */,
+				013631E52612749500F7B2B4 /* Env.cpp */,
+				013631E62612749500F7B2B4 /* Env.h */,
 			);
 			path = msdscript;
 			sourceTree = "<group>";
@@ -217,6 +222,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				01FDEA7225BE40F000D22B11 /* Expr.cpp in Sources */,
+				013631E72612749500F7B2B4 /* Env.cpp in Sources */,
 				017D524425DC39880068A996 /* Parse.cpp in Sources */,
 				01FDEA3825B74B9500D22B11 /* cmdline.cpp in Sources */,
 				01FDEA2F25B74B1300D22B11 /* main.cpp in Sources */,

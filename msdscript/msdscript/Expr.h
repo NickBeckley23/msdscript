@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include "pointer.h"
+#include "Env.h"
 
 
 typedef enum {
@@ -34,10 +35,10 @@ public:
     virtual bool equals(PTR(Expr)other) = 0;
     
     //returns the value of the Expression
-    virtual PTR(Val) interp() = 0;
+    virtual PTR(Val) interp(PTR(Env) env) = 0;
     
     //substitutes a given string for an expression
-    virtual PTR(Expr) subst(std::string string, PTR(Expr)exp) = 0;
+//    virtual PTR(Expr) subst(std::string string, PTR(Expr)exp) = 0;
     
     //prints simpliest version of epxpression as a string
     virtual void print(std::ostream& output) = 0;
@@ -65,8 +66,8 @@ class NumExpr : public Expr{
     NumExpr(int val);
     
     bool equals(PTR(Expr)other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr)exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr)exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -81,8 +82,8 @@ class AddExpr : public Expr {
     
     bool equals(PTR(Expr) other);
     
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -96,8 +97,8 @@ class MultExpr : public Expr {
     MultExpr(PTR(Expr) lhs, PTR(Expr) rhs);
     
     bool equals(PTR(Expr) other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -110,8 +111,8 @@ class VarExpr : public Expr {
     VarExpr(std::string var);
     
     bool equals(PTR(Expr) other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -126,8 +127,8 @@ class LetExpr : public Expr {
     LetExpr(std::string lhs, PTR(Expr) rhs, PTR(Expr) body);
     
     bool equals(PTR(Expr)other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -141,8 +142,8 @@ class BoolExpr : public Expr{
     BoolExpr(bool boolVal);
     
     bool equals(PTR(Expr)other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -156,8 +157,8 @@ class EqExpr : public Expr {
     EqExpr(PTR(Expr) lhs, PTR(Expr) rhs);
     
     bool equals(PTR(Expr) other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -172,8 +173,8 @@ class IfExpr : public Expr {
     IfExpr(PTR(Expr) _if, PTR(Expr) _then, PTR(Expr) _else);
     
     bool equals(PTR(Expr) other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -187,8 +188,8 @@ public:
     FunExpr(std::string formal_arg, PTR(Expr) body);
     
     bool equals(PTR(Expr) other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);
@@ -202,8 +203,8 @@ public:
     CallExpr(PTR(Expr) to_be_called, PTR(Expr) actual_arg);
     
     bool equals(PTR(Expr) other);
-    PTR(Val) interp();
-    PTR(Expr) subst(std::string string, PTR(Expr) exp);
+    PTR(Val) interp(PTR(Env) env);
+//    PTR(Expr) subst(std::string string, PTR(Expr) exp);
     void print(std::ostream& output);
     void pretty_print(std::ostream& output);
     void pretty_print_at(std::ostream& output, print_mode_t mode, long *pos);

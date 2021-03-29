@@ -11,13 +11,14 @@
 #include <stdio.h>
 #include <iostream>
 #include "pointer.h"
+#include "Env.h"
 
 class Expr;
 
 CLASS(Val) {
 public:
     virtual ~Val() {};
-    virtual PTR(Expr) to_expr() = 0;
+//    virtual PTR(Expr) to_expr() = 0;
     virtual bool equals(PTR(Val) v) = 0;
     virtual PTR(Val) add_to(PTR(Val) rhs) = 0;
     virtual PTR(Val) mult_to(PTR(Val) rhs) = 0;
@@ -33,7 +34,7 @@ public:
     
     NumVal(int val);
     
-    PTR(Expr) to_expr();
+//    PTR(Expr) to_expr();
     bool equals(PTR(Val) v);
     PTR(Val) add_to(PTR(Val) rhs);
     PTR(Val) mult_to(PTR(Val) rhs);
@@ -49,7 +50,7 @@ public:
     
     BoolVal(bool boolVal);
     
-    PTR(Expr) to_expr();
+//    PTR(Expr) to_expr();
     bool equals(PTR(Val) v);
     PTR(Val) add_to(PTR(Val) rhs);
     PTR(Val) mult_to(PTR(Val) rhs);
@@ -63,10 +64,11 @@ class FunVal : public Val {
 public:
     std::string formal_arg;
     PTR(Expr)body;
+    PTR(Env) env;
     
-    FunVal(std::string formal_arg, PTR(Expr) body);
+    FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env);
     
-    PTR(Expr) to_expr();
+//    PTR(Expr) to_expr();
     bool equals(PTR(Val) v);
     PTR(Val) add_to(PTR(Val) rhs);
     PTR(Val) mult_to(PTR(Val) rhs);
