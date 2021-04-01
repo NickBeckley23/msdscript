@@ -30,6 +30,7 @@ std::string Expr::pp_to_string(){
 }
 
 NumExpr::NumExpr(int val) {
+    this->numVal = NEW(NumVal)(val);
     this->val = val;
 }
 
@@ -42,7 +43,7 @@ bool NumExpr::equals(PTR(Expr) other){
 }
 
 PTR(Val) NumExpr::interp(PTR(Env) env){
-    return NEW(NumVal)(this->val);
+    return numVal;
 }
 
 
@@ -273,6 +274,7 @@ void LetExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos
 }
 
 BoolExpr::BoolExpr(bool boolVal) {
+    this->bVal = NEW(BoolVal)(boolVal);
     this->boolVal = boolVal;
 }
 
@@ -285,7 +287,8 @@ bool BoolExpr::equals(PTR(Expr) other){
 }
 
 PTR(Val) BoolExpr::interp(PTR(Env) env){
-    return NEW(BoolVal)(this->boolVal);
+//    return NEW(BoolVal)(this->boolVal);
+    return bVal;
 }
 
 //PTR(Expr) BoolExpr::subst(std::string string, PTR(Expr)exp){
@@ -586,11 +589,6 @@ TEST_CASE("Expression Tests"){
     PTR(LetExpr)let2 = NEW(LetExpr)("x", NEW(NumExpr)(2), NEW(AddExpr)(NEW(NumExpr)(5), NEW(VarExpr)("x")));
     std::string pp_let1 = "_let x = 5\n        _in  (_let y = 3\n              _in  y + 2) + x";
 
-    PTR(Expr)let4 = NEW(LetExpr)("x",NEW(VarExpr)("x"),NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(2)));
-
-    PTR(Expr)let5 = NEW(LetExpr) ("x", NEW(NumExpr)(8), NEW(AddExpr) (NEW(VarExpr)("x"), NEW(VarExpr)("y")));
-
-    PTR(Expr)let6 = NEW(LetExpr) ("x",NEW(VarExpr) ("y"),NEW(AddExpr) (NEW(VarExpr)("x"), NEW(VarExpr)("y")));
     CHECK((NEW(AddExpr)(NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(VarExpr)("x"))), NEW(NumExpr) (1)))->interp(Env::empty)->equals(NEW(NumVal)(26)));
     CHECK((NEW(AddExpr)(NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(VarExpr)("x"))), NEW(NumExpr) (1)))->pp_to_string() == "5 * (_let x = 5\n     _in  x) + 1");
 

@@ -62,6 +62,7 @@ public:
 class NumExpr : public Expr{
     public:
         int val;
+    PTR(Val) numVal;
         
     NumExpr(int val);
     
@@ -138,6 +139,7 @@ class LetExpr : public Expr {
 class BoolExpr : public Expr{
     public:
         bool boolVal;
+    PTR(Val) bVal;
         
     BoolExpr(bool boolVal);
     
