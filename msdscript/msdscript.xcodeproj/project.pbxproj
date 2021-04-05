@@ -14,6 +14,10 @@
 		012E73E425C9C2B300E3FB20 /* Expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01FDEA7025BE40F000D22B11 /* Expr.cpp */; };
 		012E73EE25C9C75D00E3FB20 /* run.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 012E73ED25C9C75D00E3FB20 /* run.cpp */; };
 		013631E72612749500F7B2B4 /* Env.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 013631E52612749500F7B2B4 /* Env.cpp */; };
+		013632062619165500F7B2B4 /* Step.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 013632042619165500F7B2B4 /* Step.cpp */; };
+		013632072619165500F7B2B4 /* Step.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 013632042619165500F7B2B4 /* Step.cpp */; };
+		0136320C2619167300F7B2B4 /* Cont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0136320A2619167300F7B2B4 /* Cont.cpp */; };
+		0136320D2619167300F7B2B4 /* Cont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0136320A2619167300F7B2B4 /* Cont.cpp */; };
 		017D524425DC39880068A996 /* Parse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 017D524225DC39880068A996 /* Parse.cpp */; };
 		017D524725DC39930068A996 /* Parse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 017D524225DC39880068A996 /* Parse.cpp */; };
 		01FDEA2F25B74B1300D22B11 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01FDEA2E25B74B1300D22B11 /* main.cpp */; };
@@ -44,6 +48,10 @@
 		012E73ED25C9C75D00E3FB20 /* run.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = run.cpp; sourceTree = "<group>"; };
 		013631E52612749500F7B2B4 /* Env.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Env.cpp; sourceTree = "<group>"; };
 		013631E62612749500F7B2B4 /* Env.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Env.h; sourceTree = "<group>"; };
+		013632042619165500F7B2B4 /* Step.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Step.cpp; sourceTree = "<group>"; };
+		013632052619165500F7B2B4 /* Step.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Step.h; sourceTree = "<group>"; };
+		0136320A2619167300F7B2B4 /* Cont.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Cont.cpp; sourceTree = "<group>"; };
+		0136320B2619167300F7B2B4 /* Cont.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Cont.h; sourceTree = "<group>"; };
 		017D524225DC39880068A996 /* Parse.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Parse.cpp; sourceTree = "<group>"; };
 		017D524325DC39880068A996 /* Parse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parse.h; sourceTree = "<group>"; };
 		01FDEA2B25B74B1300D22B11 /* msdscript */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = msdscript; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,6 +126,10 @@
 				0110021026011B1B00125C5B /* pointer.h */,
 				013631E52612749500F7B2B4 /* Env.cpp */,
 				013631E62612749500F7B2B4 /* Env.h */,
+				013632042619165500F7B2B4 /* Step.cpp */,
+				013632052619165500F7B2B4 /* Step.h */,
+				0136320A2619167300F7B2B4 /* Cont.cpp */,
+				0136320B2619167300F7B2B4 /* Cont.h */,
 			);
 			path = msdscript;
 			sourceTree = "<group>";
@@ -212,6 +224,8 @@
 				012E73EE25C9C75D00E3FB20 /* run.cpp in Sources */,
 				017D524725DC39930068A996 /* Parse.cpp in Sources */,
 				012E73E425C9C2B300E3FB20 /* Expr.cpp in Sources */,
+				013632072619165500F7B2B4 /* Step.cpp in Sources */,
+				0136320D2619167300F7B2B4 /* Cont.cpp in Sources */,
 				012E73DD25C9C15200E3FB20 /* test.m in Sources */,
 				01117E2025E5A13C0081CA1A /* Val.cpp in Sources */,
 			);
@@ -221,11 +235,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0136320C2619167300F7B2B4 /* Cont.cpp in Sources */,
 				01FDEA7225BE40F000D22B11 /* Expr.cpp in Sources */,
 				013631E72612749500F7B2B4 /* Env.cpp in Sources */,
 				017D524425DC39880068A996 /* Parse.cpp in Sources */,
 				01FDEA3825B74B9500D22B11 /* cmdline.cpp in Sources */,
 				01FDEA2F25B74B1300D22B11 /* main.cpp in Sources */,
+				013632062619165500F7B2B4 /* Step.cpp in Sources */,
 				01117E1D25E59FE00081CA1A /* Val.cpp in Sources */,
 				0110021126011B1B00125C5B /* pointer.h in Sources */,
 			);

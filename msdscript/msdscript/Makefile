@@ -1,8 +1,8 @@
-INCS = cmdline.h catch.h Expr.h Parse.h Val.h pointer.h Env.h
+INCS = cmdline.h catch.h Expr.h Parse.h Val.h pointer.h Env.h Step.h Cont.h
 
 INCS2 = ../test_msdscript/test_msdscript/exec.hpp
 
-OBJS = main.o cmdline.o Expr.o Parse.o Val.o Env.o
+OBJS = main.o cmdline.o Expr.o Parse.o Val.o Env.o Step.o Cont.o
 
 OBJS2 = ../test_msdscript/test_msdscript/main.o ../test_msdscript/test_msdscript/exec.o
 
@@ -42,3 +42,9 @@ Val.o: Val.cpp $(INCS)
 
 Env.o: Env.cpp $(INCS)
 	$(CXX) $(CXXFLAGS) -c Env.cpp
+
+Step.o: Step.cpp $(INCS)
+	$(CXX) $(CXXFLAGS) -c Step.cpp
+
+Cont.o: Cont.cpp $(INCS)
+	$(CXX) $(CXXFLAGS) -c Cont.cpp

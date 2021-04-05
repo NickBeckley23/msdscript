@@ -8,6 +8,8 @@
 #include "Val.h"
 #include "Expr.h"
 #include "catch.h"
+#include "Step.h"
+#include "Cont.h"
 
 std::string Val::to_string(){
     std::ostream stream(nullptr);
@@ -20,10 +22,6 @@ std::string Val::to_string(){
 NumVal::NumVal(int num){
     this->val = num;
 }
-
-//PTR(Expr) NumVal::to_expr(){
-//    return NEW(NumExpr)(this->val);
-//}
 
 bool NumVal::equals(PTR(Val) other){
     PTR(NumVal) num = CAST(NumVal)(other);
@@ -55,6 +53,10 @@ PTR(Val) NumVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("calling not allowed on numval");
 }
 
+void NumVal::call_step(PTR(Val) actual_arg, PTR(Cont) rest) {
+    throw std::runtime_error("attempted to use call_step on a NumVal");
+}
+
 void NumVal::print(std::ostream& output){
     output << this->val;
 }
@@ -62,10 +64,6 @@ void NumVal::print(std::ostream& output){
 BoolVal::BoolVal(bool boolVal){
     this->boolVal = boolVal;
 }
-
-//PTR(Expr) BoolVal::to_expr(){
-//    return NEW(BoolExpr)(this->boolVal);
-//}
 
 bool BoolVal::equals(PTR(Val) other){
     PTR(BoolVal) b = CAST(BoolVal)(other);
@@ -98,15 +96,15 @@ PTR(Val) BoolVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("calling not allowed on boolval");
 }
 
+void BoolVal::call_step(PTR(Val) actual_arg, PTR(Cont) rest) {
+    throw std::runtime_error("attempted to use call_step on a BoolVal");
+}
+
 FunVal::FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env){
     this->formal_arg = formal_arg;
     this->body = body;
     this->env = env;
 }
-
-//PTR(Expr) FunVal::to_expr(){
-//    return NEW(FunExpr)(this->formal_arg, this->body);
-//}
 
 bool FunVal::equals(PTR(Val) other){
     PTR(FunVal) f = CAST(FunVal)(other);
@@ -140,6 +138,13 @@ PTR(Val) FunVal::call(PTR(Val) actual_arg){
     return body->interp(NEW(ExtendedEnv)(formal_arg, actual_arg, env));
 }
 
+void FunVal::call_step(PTR(Val) actual_arg_val, PTR(Cont) rest) {
+    Step::mode = Step::interp_mode;
+    Step::expr = body;
+    Step::env = NEW(ExtendedEnv)(formal_arg, actual_arg_val, env);
+    Step::cont = rest;
+}
+
 TEST_CASE("ValClass"){
     std::string testString = "";
     CHECK((NEW(NumVal)(5))->equals(NEW(NumVal)(5))==true);
@@ -157,11 +162,7 @@ TEST_CASE("ValClass"){
     CHECK((NEW(BoolVal)(true))->to_string() == "_true");
     CHECK((NEW(BoolVal)(false))->to_string() == "_false");
     CHECK((NEW(BoolVal)(true))->is_true());
-//    CHECK((NEW(BoolVal)(true))->to_expr()->equals(NEW(BoolExpr)(true)));
     CHECK((NEW(BoolVal)(true))->equals(NULL)==false);
-//    testString = "5";
-//    CHECK(((NEW(NumVal)(5))->to_expr()->to_string() == "5"));
-//    CHECK(((NEW(BoolVal)(true))->to_expr()->pp_to_string() == "_true"));
     
     CHECK_THROWS_WITH((NEW(BoolVal)(true))->add_to(NEW(NumVal)(5)), "addition of non-number");
     CHECK_THROWS_WITH((NEW(BoolVal)(true))->mult_to(NEW(NumVal)(5)), "multiplication of non-number");
@@ -177,9 +178,7 @@ TEST_CASE("ValClass"){
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->equals(NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))==true);
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->equals(NULL)==false);
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->to_string() == "(_fun (x) 5)");
-//    
     CHECK((NEW(FunVal)("x", NEW(MultExpr)(NEW(NumExpr)(2), NEW(VarExpr)("x")),Env::empty))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(6))==true);
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(5))==true);
     CHECK((NEW(FunVal)("x", NEW(NumExpr)(5),Env::empty))->call(NEW(NumVal)(3))->equals(NEW(NumVal)(3))==false);
-    
 }

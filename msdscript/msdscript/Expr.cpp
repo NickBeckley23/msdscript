@@ -9,9 +9,9 @@
 #include "catch.h"
 #include "Parse.h"
 #include "Val.h"
+#include "Step.h"
+#include "Cont.h"
 #include <stdexcept>
-
-
 
 std::string Expr::to_string(){
     std::ostream output(nullptr);
@@ -46,10 +46,10 @@ PTR(Val) NumExpr::interp(PTR(Env) env){
     return numVal;
 }
 
-
-//PTR(Expr) NumExpr::subst(std::string string, PTR(Expr) exp){
-//    return THIS;
-//}
+void NumExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = numVal;
+}
 
 void NumExpr::print(std::ostream& output){
     output << this->val;
@@ -63,7 +63,6 @@ void NumExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos
     output << this->val;
 }
 
-
 AddExpr::AddExpr(PTR(Expr) lhs, PTR(Expr) rhs) {
     this->lhs = lhs;
     this->rhs = rhs;
@@ -75,15 +74,17 @@ bool AddExpr::equals(PTR(Expr) other){
         return false;
     else
         return (this->lhs->equals(o->lhs) && this->rhs->equals(o->rhs));
-};
+}
 
 PTR(Val) AddExpr::interp(PTR(Env) env){
     return this->lhs->interp(env)->add_to(this->rhs->interp(env));
-};
+}
 
-//PTR(Expr) AddExpr::subst(std::string string, PTR(Expr) exp){
-//    return NEW(AddExpr)(lhs->subst(string, exp),rhs->subst(string, exp));
-//};
+void AddExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = lhs;
+    Step::cont = NEW(RightThenAddCont)(rhs, Step::env, Step::cont);
+}
 
 void AddExpr::print(std::ostream& output){
     output << "(";
@@ -91,7 +92,7 @@ void AddExpr::print(std::ostream& output){
     output << "+";
     this->rhs->print(output);
     output << ")";
-};
+}
 
 void AddExpr::pretty_print(std::ostream& output){
     long pos = 0;
@@ -109,13 +110,12 @@ void AddExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos
     rhs->pretty_print_at(output, print_group_add_or_eq, pos);
     if(mode == print_group_add_or_let || mode == print_group_add || mode == print_group_add_or_mult_or_let)
         output << ")";
-};
-
+}
 
 MultExpr::MultExpr(PTR(Expr) lhs, PTR(Expr) rhs) {
     this->lhs = lhs;
     this->rhs = rhs;
-};
+}
 
 bool MultExpr::equals(PTR(Expr) other){
     PTR(MultExpr) o = CAST(MultExpr)(other);
@@ -123,15 +123,17 @@ bool MultExpr::equals(PTR(Expr) other){
         return false;
     else
         return (this->lhs->equals(o->lhs) && this->rhs->equals(o->rhs));
-};
+}
 
 PTR(Val) MultExpr::interp(PTR(Env) env){
     return this->lhs->interp(env)->mult_to(this->rhs->interp(env));
-};
+}
 
-//PTR(Expr) MultExpr::subst(std::string string, PTR(Expr) exp){
-//    return NEW(MultExpr)(lhs->subst(string, exp), rhs->subst(string, exp));
-//}
+void MultExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = lhs;
+    Step::cont = NEW(RightThenMultCont)(rhs, Step::env, Step::cont);
+}
 
 void MultExpr::print(std::ostream& output){
     output << "(";
@@ -139,7 +141,7 @@ void MultExpr::print(std::ostream& output){
     output << "*";
     this->rhs->print(output);
     output << ")";
-};
+}
 
 void MultExpr::pretty_print(std::ostream& output){
     long pos = 0;
@@ -165,11 +167,11 @@ void MultExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *po
         output << " * ";
         rhs->pretty_print_at(output, print_group_add, pos);
     }
-};
+}
 
 VarExpr::VarExpr(std::string var){
     this->var = var;
-};
+}
 
 bool VarExpr::equals(PTR(Expr) other){
     PTR(VarExpr) o = CAST(VarExpr)(other);
@@ -177,27 +179,24 @@ bool VarExpr::equals(PTR(Expr) other){
         return false;
     else
         return(this->var == o->var);
-};
+}
 
 PTR(Val) VarExpr::interp(PTR(Env) env){
-//    throw std::runtime_error("variable has no value");
     return env->lookup(var);
-};
+}
 
-//PTR(Expr) VarExpr::subst(std::string string, PTR(Expr) exp){
-//    if(this->var == string)
-//        return exp;
-//    else
-//        return THIS;
-//};
+void VarExpr::step_interp() {
+    Step::val = Step::env->lookup(var);
+    Step::mode = Step::continue_mode;
+}
 
 void VarExpr::print(std::ostream& output){
     output << this->var;
-};
+}
 
 void VarExpr::pretty_print(std::ostream& output){
     output << this->var;
-};
+}
 
 void VarExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     output << this->var;
@@ -223,15 +222,11 @@ PTR(Val) LetExpr::interp(PTR(Env) env){
     return this->body->interp(new_env);
 }
 
-//PTR(Expr) LetExpr::subst(std::string string, PTR(Expr) exp){
-//    std::string new_lhs = this->lhs;
-//    PTR(Expr) new_rhs = this->rhs->subst(string, exp);
-//    PTR(Expr) new_body = this->body;
-//    if(new_lhs != string){
-//        new_body = new_body->subst(string, exp);
-//    }
-//    return NEW(LetExpr)(new_lhs, new_rhs, new_body);
-//}
+void LetExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = rhs;
+    Step::cont = NEW(LetBodyCont)(lhs, body, Step::env, Step::cont);
+}
 
 void LetExpr::print(std::ostream& output){
     output << "(_let ";
@@ -287,13 +282,13 @@ bool BoolExpr::equals(PTR(Expr) other){
 }
 
 PTR(Val) BoolExpr::interp(PTR(Env) env){
-//    return NEW(BoolVal)(this->boolVal);
     return bVal;
 }
 
-//PTR(Expr) BoolExpr::subst(std::string string, PTR(Expr)exp){
-//    return THIS;
-//}
+void BoolExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = bVal;
+}
 
 void BoolExpr::print(std::ostream& output){
     if(this->boolVal)
@@ -313,7 +308,7 @@ void BoolExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *po
 EqExpr::EqExpr(PTR(Expr) lhs, PTR(Expr) rhs) {
     this->lhs = lhs;
     this->rhs = rhs;
-};
+}
 
 bool EqExpr::equals(PTR(Expr) other){
     PTR(EqExpr) e = CAST(EqExpr)(other);
@@ -321,15 +316,18 @@ bool EqExpr::equals(PTR(Expr) other){
         return false;
     else
         return (this->lhs->equals(e->lhs) && this->rhs->equals(e->rhs));
-};
+}
 
 PTR(Val) EqExpr::interp(PTR(Env) env){
     return NEW(BoolVal)(lhs->interp(env)->equals(rhs->interp(env)));
-};
+}
 
-//PTR(Expr) EqExpr::subst(std::string string, PTR(Expr) exp){
-//    return NEW(EqExpr)(lhs->subst(string, exp), rhs->subst(string, exp));
-//};
+void EqExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = lhs;
+    //Step::env = Step::env; no-op
+    Step::cont = NEW(RightThenEqCont)(rhs, Step::env, Step::cont);
+}
 
 void EqExpr::print(std::ostream& output){
     output << "(";
@@ -337,7 +335,7 @@ void EqExpr::print(std::ostream& output){
     output << "==";
     this->rhs->print(output);
     output << ")";
-};
+}
 
 void EqExpr::pretty_print(std::ostream& output){
     long pos = 0;
@@ -345,7 +343,7 @@ void EqExpr::pretty_print(std::ostream& output){
     lhs->pretty_print_at(output, print_group_eq, positionPtr);
     output << " == ";
     rhs->pretty_print_at(output, print_group_none, positionPtr);
-};
+}
 
 void EqExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos){
     if(mode == print_group_none){
@@ -359,7 +357,7 @@ void EqExpr::pretty_print_at(std::ostream& output, print_mode_t mode, long *pos)
         rhs->pretty_print_at(output, print_group_none, pos);
         output << ")";
     }
-};
+}
 
 IfExpr::IfExpr(PTR(Expr) test_part, PTR(Expr) then_part, PTR(Expr) else_part){
     this->test_part = test_part;
@@ -373,7 +371,7 @@ bool IfExpr::equals(PTR(Expr) other){
         return false;
     else
         return (this->test_part->equals(o->test_part) && this->then_part->equals(o->then_part) && this->else_part->equals(o->else_part));
-};
+}
 
 PTR(Val) IfExpr::interp(PTR(Env) env){
     if(test_part->interp(env)->is_true())
@@ -382,9 +380,11 @@ PTR(Val) IfExpr::interp(PTR(Env) env){
         return else_part->interp(env);
 }
 
-//PTR(Expr) IfExpr::subst(std::string string, PTR(Expr) exp){
-//    return NEW(IfExpr)(test_part->subst(string, exp), then_part->subst(string, exp), else_part->subst(string, exp));
-//}
+void IfExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = test_part;
+    Step::cont = NEW(IfBranchCont)(then_part, else_part, Step::env, Step::cont);
+}
 
 void IfExpr::print(std::ostream& output){
     output << "(_if ";
@@ -450,6 +450,12 @@ bool FunExpr::equals(PTR(Expr) other){
 
 PTR(Val) FunExpr::interp(PTR(Env) env){
     return NEW(FunVal)(this->formal_arg, this->body, env);
+}
+
+void FunExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = NEW(FunVal)(formal_arg, body, Step::env);
+    //Step::cont = Step::cont; //no-op
 }
 
 //PTR(Expr) FunExpr::subst(std::string string, PTR(Expr) exp){
@@ -524,9 +530,11 @@ PTR(Val) CallExpr::interp(PTR(Env) env){
     return this->to_be_called->interp(env)->call(this->actual_arg->interp(env));
 }
 
-//PTR(Expr) CallExpr::subst(std::string string, PTR(Expr) exp){
-//    return NEW(CallExpr)(to_be_called->subst(string, exp), actual_arg->subst(string, exp));
-//}
+void CallExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = to_be_called;
+    Step::cont = NEW(ArgThenCallCont)(actual_arg, Step::env, Step::cont);
+}
 
 void CallExpr::print(std::ostream& output){
     this->to_be_called->print(output);
@@ -806,4 +814,11 @@ TEST_CASE("Expression Tests"){
     
     CHECK((NEW(LetExpr)("factrl", NEW(FunExpr)("factrl", NEW(FunExpr)("x", NEW(IfExpr)(NEW(EqExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)), NEW(NumExpr)(1), NEW(MultExpr)(NEW(VarExpr)("x"), NEW(CallExpr)( NEW(CallExpr)( NEW(VarExpr)("factrl"), NEW(VarExpr)("factrl")),NEW(AddExpr)( NEW(VarExpr)("x"), NEW(NumExpr)(-1))))))), NEW(CallExpr)( NEW(CallExpr)( NEW(VarExpr)("factrl"), NEW(VarExpr)("factrl")), NEW(NumExpr)(10))))->interp(Env::empty)->equals(NEW(NumVal)(3628800)));
 
+    CHECK(Step::interp_by_steps(parse_str("1"))->equals(NEW(NumVal)(1)));
+    CHECK(Step::interp_by_steps(parse_str("2+2"))->equals(NEW(NumVal)(4)));
+    CHECK(Step::interp_by_steps(parse_str("_true"))->equals(NEW(BoolVal)(true)));
+    CHECK(Step::interp_by_steps(parse_str("_let x = 3 _in x+2"))->equals(NEW(NumVal)(5)));
+    CHECK(Step::interp_by_steps(parse_str("_if 1==1 _then 5 _else 3"))->equals(NEW(NumVal)(5)));
+    CHECK(Step::interp_by_steps(parse_str("_if 1==0 _then 5 _else 3"))->equals(NEW(NumVal)(3)));
+    CHECK(Step::interp_by_steps(parse_str("_if 1==1 _then 2*2 _else 3"))->equals(NEW(NumVal)(4)));
 };

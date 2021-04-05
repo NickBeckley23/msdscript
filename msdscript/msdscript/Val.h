@@ -14,6 +14,8 @@
 #include "Env.h"
 
 class Expr;
+class Cont;
+class Step;
 
 CLASS(Val) {
 public:
@@ -25,6 +27,7 @@ public:
     virtual void print(std::ostream& output) = 0;
     virtual bool is_true() = 0;
     virtual PTR(Val) call(PTR(Val) actual_arg) = 0;
+    virtual void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest) = 0;
     std::string to_string();
 };
 
@@ -41,6 +44,7 @@ public:
     void print(std::ostream& output);
     bool is_true();
     PTR(Val) call(PTR(Val) actual_arg);
+    void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest);
     
 };
 
@@ -57,6 +61,7 @@ public:
     void print(std::ostream& output);
     bool is_true();
     PTR(Val) call(PTR(Val) actual_arg);
+    void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest);
     
 };
 
@@ -75,6 +80,7 @@ public:
     void print(std::ostream& output);
     bool is_true();
     PTR(Val) call(PTR(Val) actual_arg);
+    void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest);
 };
 
 #endif /* Val_hpp */

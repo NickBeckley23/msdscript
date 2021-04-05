@@ -16,7 +16,7 @@ void use_arguments(int argc,char * argv[]){
     for(int i = 1; i < argc; i++){
         std::string arg = argv[i];
         if(arg == "--help"){
-            std::cout << "Arguments allowed: --help --test --interp --print --pretty_print\n";
+            std::cout << "Arguments allowed: --help --test --interp --step --print --pretty_print\n";
             exit(0);
         }else if(arg == "--test" && testSeen == false){
             int fail = Catch::Session().run(1, argv);
@@ -31,6 +31,11 @@ void use_arguments(int argc,char * argv[]){
             PTR(Expr)e = parse_expr(std::cin);
             PTR(Val)out = e->interp(Env::empty);
             out->print(std::cout);
+            std::cout << "\n";
+        }else if(arg == "--step"){
+            PTR(Expr) e = parse_expr(std::cin);
+            PTR(Val) out = Step::interp_by_steps(e);
+            std::cout << out->to_string();
             std::cout << "\n";
         }else if(arg == "--print"){
             PTR(Expr)e = parse_expr(std::cin);

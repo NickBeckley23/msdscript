@@ -9,6 +9,8 @@
 #include "Expr.h"
 #include "catch.h"
 #include "Val.h"
+#include "Step.h"
+#include "Cont.h"
 
 void consume(std::istream &in, int expect){
     int c = in.get();
@@ -326,8 +328,6 @@ TEST_CASE("PARSE"){
     ss.str("_notlet");
     CHECK((parse_str("1")->equals(NEW(NumExpr)(1))));
     CHECK((parse_str("-1")->equals(NEW(NumExpr)(-1))));
-//    CHECK_THROWS_WITH((parse_str("(1*1")->interp()), "missing closing parenthesis");
-//    CHECK_THROWS_WITH((parse_str("^1*1")->interp()), "invalid input");
     ss.str("hello");
     CHECK_THROWS_WITH(parse_keyword(ss), "consume mismatch");
     ss.str("x");
