@@ -20,7 +20,6 @@
 class Expr;
 class Env;
 class Val;
-class VarExpr;
 class Cont;
 
 class Step {

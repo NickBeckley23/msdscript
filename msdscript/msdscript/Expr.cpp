@@ -455,7 +455,6 @@ PTR(Val) FunExpr::interp(PTR(Env) env){
 void FunExpr::step_interp() {
     Step::mode = Step::continue_mode;
     Step::val = NEW(FunVal)(formal_arg, body, Step::env);
-    //Step::cont = Step::cont; //no-op
 }
 
 //PTR(Expr) FunExpr::subst(std::string string, PTR(Expr) exp){
@@ -821,4 +820,7 @@ TEST_CASE("Expression Tests"){
     CHECK(Step::interp_by_steps(parse_str("_if 1==1 _then 5 _else 3"))->equals(NEW(NumVal)(5)));
     CHECK(Step::interp_by_steps(parse_str("_if 1==0 _then 5 _else 3"))->equals(NEW(NumVal)(3)));
     CHECK(Step::interp_by_steps(parse_str("_if 1==1 _then 2*2 _else 3"))->equals(NEW(NumVal)(4)));
+    CHECK(Step::interp_by_steps(parse_str("_let f = _fun (x) x + 1 _in  f(10)"))->equals(NEW(NumVal)(11)));
+    CHECK(Step::interp_by_steps(parse_str("(_fun (x) x + 1)(5)"))->equals(NEW(NumVal)(6)));
+
 };
